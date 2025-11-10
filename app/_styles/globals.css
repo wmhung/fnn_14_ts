@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Scrollbar width */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  /* Scrollbar thumb */
+  ::-webkit-scrollbar-thumb {
+    background-color: #f1f3f5;
+    border-radius: 4px;
+    /* You cannot force an exact thumb length — browsers scale it automatically to reflect scroll proportion. */
+  }
+
+  .spinner {
+    /* position: absolute;
+    top: 50%;
+    left: 44%; */
+    margin: 3.2rem auto 1.6rem;
+    width: 60px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 8px solid theme('colors.slate.700');
+    border-right-color: theme('colors.slate.50');
+    animation: rotate 1s infinite linear;
+  }
+
+  .spinner-mini {
+    margin: 0;
+    width: 20px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid theme('colors.slate.700');
+    border-right-color: transparent;
+    animation: rotate 1s infinite linear;
+  }
+
+  /* inset shadow*/
+  .inset-shadow {
+    box-shadow: inset 0 0 10px rgba(203, 213, 225, 0.3);
+  }
+
+  @keyframes shift {
+    0% {
+      transform: translateX(10%) translateY(10%);
+    }
+
+    100% {
+      transform: translateX(-10%) translateY(-10%);
+    }
+  }
+
+  @keyframes rotate {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+}
