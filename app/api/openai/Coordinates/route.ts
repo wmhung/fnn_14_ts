@@ -4,7 +4,30 @@ import fetch from 'node-fetch'; // only needed if not using native fetch
 const openai = new OpenAI();
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
-export async function POST(request) {
+interface GeoLocation {
+  lat: number;
+  lng: number;
+}
+
+interface GeoResult {
+  geometry: {
+    location: GeoLocation;
+  };
+}
+
+interface GeoResponse {
+  results?: {
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+    };
+  }[];
+  status?: string;
+}
+
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     const userInput = body?.value;
@@ -31,10 +54,6 @@ You are a helpful assistant that recommends the best park for the user's request
 - Recommend one specific park name as JSON: {"title": "Park Name"}
 
 Do not include coordinates. Just return the park name as a JSON object with key "title".
-
-Examples:
-→ {"title": "Daan Forest Park"}
-→ {"title": "大安森林公園"}
           `.trim(),
         },
         { role: 'user', content: userInput },
@@ -70,8 +89,8 @@ Examples:
       )}&key=${GOOGLE_API_KEY}`
     );
 
-    const geoData = await geoRes.json();
-    const location = geoData?.results?.[0]?.geometry?.location;
+    const geoData: GeoResponse = await geoRes.json();
+    const location = geoData.results?.[0]?.geometry.location;
 
     if (!location) {
       return new Response(
