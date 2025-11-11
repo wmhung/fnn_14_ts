@@ -17,3 +17,21 @@ export interface Park {
   email?: string;
   userName?: string;
 }
+
+export type Bookmark = {
+  id: number;
+  parkId: number;
+  parkName: string;
+  date: string | Date;
+  starRating: number;
+  position?: Position;
+  email?: string;
+  userName?: string;
+  [key: string]: any;
+};
+
+export interface PaginationQuery {
+  email?: string;
+  page?: number;
+  query?: string;
+}

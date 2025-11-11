@@ -1,14 +1,15 @@
 'use server';
 
 import { supabase } from './supabase';
-import { notFound } from 'next/navigation';
 import { PAGE_SIZE } from './utils/constants';
+import type { Park, Bookmark, PaginationQuery } from '@/types/park';
 
 // import { auth } from './auth';
 /////////////
 // GET
 
-export async function getPark(id) {
+// get single park
+export async function getPark(id: number): Promise<Park | null> {
   const { data, error } = await supabase
     .from('parklist')
     .select('*')
@@ -20,19 +21,22 @@ export async function getPark(id) {
     return null;
   }
 
-  return data;
+  return data as Park;
 }
 
 // get park data and count
-export async function getParkLists({ email, page, query } = {}) {
+// import and use GetParkListsParams type
+export async function getParkLists({
+  email,
+  page,
+  query,
+}: PaginationQuery = {}): Promise<{ data: Park[]; count: number | null }> {
   let queryBuilder = supabase
     .from('parklist')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
-  if (query) {
-    queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
-  }
+  if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
 
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
@@ -47,11 +51,11 @@ export async function getParkLists({ email, page, query } = {}) {
     throw new Error('Could not load park data');
   }
 
-  return { data, count };
+  return { data: (data as Park[]) ?? [], count };
 }
 
 // get user park count
-export async function getUserParkCount(email) {
+export async function getUserParkCount(email: string): Promise<number> {
   const { count, error } = await supabase
     .from('parklist')
     .select('*', { count: 'exact', head: true })
@@ -63,15 +67,18 @@ export async function getUserParkCount(email) {
 }
 
 // get bookmarks data, sort and page
-export async function getBookmarkLists({ email, page, query } = {}) {
+// reuse the same GetParkListsParams type
+export async function getBookmarkLists({
+  email,
+  page,
+  query,
+}: PaginationQuery = {}): Promise<{ data: Bookmark[]; count: number | null }> {
   let queryBuilder = supabase
     .from('bookmark')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
-  if (query) {
-    queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
-  }
+  if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
 
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
@@ -86,11 +93,13 @@ export async function getBookmarkLists({ email, page, query } = {}) {
     throw new Error('Could not load bookmark data');
   }
 
-  return { data, count };
+  return { data: (data as Bookmark[]) ?? [], count };
 }
 
 // bookmarks count
-export async function getBookmarksCount(email) {
+export async function getBookmarksCount(
+  email: string
+): Promise<{ count: number }> {
   const { count, error } = await supabase
     .from('bookmark')
     .select('*', { count: 'exact' })
@@ -105,7 +114,9 @@ export async function getBookmarksCount(email) {
 }
 
 // photos count
-export async function getPhotosCount(email) {
+export async function getPhotosCount(
+  email: string
+): Promise<{ count: number }> {
   const { count, error } = await supabase
     .from('parklist')
     .select('*', { count: 'exact' })
@@ -120,7 +131,9 @@ export async function getPhotosCount(email) {
 }
 
 // The average rating of parks
-export async function getRating(email) {
+export async function getRating(
+  email: string
+): Promise<{ starRating: number }[]> {
   const { data, error } = await supabase
     .from('parklist')
     .select('starRating')
@@ -135,7 +148,7 @@ export async function getRating(email) {
 }
 
 // The average rating of user feedback
-export async function getAppRating() {
+export async function getAppRating(): Promise<{ appRating: number }[]> {
   const { data, error } = await supabase.from('feedbacks').select('appRating');
 
   if (error) {
@@ -147,7 +160,9 @@ export async function getAppRating() {
 }
 
 // Users are uniquely identified by their email address
-export async function getUser(email) {
+export async function getUser(
+  email: string
+): Promise<Record<string, any> | null> {
   const { data, error } = await supabase
     .from('user')
     .select('*')
@@ -158,7 +173,7 @@ export async function getUser(email) {
 }
 
 // Users data
-export async function getUsersData() {
+export async function getUsersData(): Promise<Record<string, any>[]> {
   const { data, error } = await supabase
     .from('user')
     .select('*')
@@ -170,7 +185,9 @@ export async function getUsersData() {
 
 // CREATE
 
-export async function createUser(newUser) {
+export async function createUser(
+  newUser: Record<string, any>
+): Promise<Record<string, any>[]> {
   const { data, error } = await supabase.from('user').insert([newUser]);
 
   if (error) {
@@ -182,7 +199,15 @@ export async function createUser(newUser) {
 }
 
 // create feedback
-export async function createFeedback({ userId, appRating, review }) {
+export async function createFeedback({
+  userId,
+  appRating,
+  review,
+}: {
+  userId: string;
+  appRating: number;
+  review: string;
+}): Promise<Record<string, any>[]> {
   const { data, error } = await supabase.from('feedbacks').insert({
     created_at: new Date().toISOString(),
     userId,

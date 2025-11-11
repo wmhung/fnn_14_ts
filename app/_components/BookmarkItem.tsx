@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { useBookmarks } from '../_lib/contexts/BookmarkContext';
 import { useRouter } from 'next/navigation';
 import { IoBookmark } from 'react-icons/io5';
+import type { Bookmark } from '@/types/park';
 import React from 'react';
-import { Bookmark } from '../_lib/contexts/ParkDataContext';
 
 interface BookmarkItemProps {
   bookmark: Bookmark;
 }
 
-const formatDate = (date: string): string => {
+const formatDate = (date: string | Date): string => {
   const d = new Date(date);
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
