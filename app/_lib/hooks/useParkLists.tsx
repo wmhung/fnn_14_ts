@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, QueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { PAGE_SIZE } from '@/app/_lib/utils/constants';
 import { getParkLists } from '../data-service';
@@ -12,35 +12,38 @@ interface ParkListResponse {
 }
 
 export function useParkLists() {
-  const queryClient = new QueryClient();
+  const queryClient = useQueryClient(); // ✅ useQueryClient() instead of new QueryClient()
   const searchParams = useSearchParams();
 
-  //pagination
-  const page = !searchParams.get('page') ? 1 : Number(searchParams.get('page'));
+  // ✅ Parse current page from URL
+  const page = Number(searchParams.get('page')) || 1;
 
-  // query
+  // ✅ Main fetch
   const { isLoading, data, error } = useQuery<ParkListResponse>({
     queryKey: ['parkLists', page],
     queryFn: () => getParkLists({ page }),
+    keepPreviousData: true,
   });
 
   const parkLists = data?.data ?? [];
   const count = data?.count ?? 0;
 
-  // pre-fetching
+  // ✅ Prefetch next and previous pages
   const pageCount = Math.ceil(count / PAGE_SIZE);
 
-  if (page < pageCount)
+  if (page < pageCount) {
     queryClient.prefetchQuery({
-      queryKey: ['parkLists', page + 1], // filter is to reload web page automatically
+      queryKey: ['parkLists', page + 1],
       queryFn: () => getParkLists({ page: page + 1 }),
     });
+  }
 
-  if (page > 1)
+  if (page > 1) {
     queryClient.prefetchQuery({
-      queryKey: ['parkLists', page - 1], // filter is to reload web page automatically
+      queryKey: ['parkLists', page - 1],
       queryFn: () => getParkLists({ page: page - 1 }),
     });
+  }
 
   return { isLoading, error, parkLists, count };
 }

@@ -44,7 +44,7 @@ export default function ParkLists() {
       <div className='flex justify-center w-full max-h-[60%] mx-1 my-2 border shadow-sm rounded-lg overflow-y-scroll overflow-x-hidden gap-[3px] list-none'>
         <ul>
           {sortedParks.map((park: Park) => (
-            <ParkItem park={park} key={park.id} />
+            <ParkItem key={park.id} park={park} />
           ))}
         </ul>
       </div>

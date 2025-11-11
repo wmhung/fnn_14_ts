@@ -24,23 +24,21 @@ export default function BookmarkList() {
       starRating: bookmark.starRating ?? 0,
     }));
 
-    // Sorting logic
-    switch (sort) {
-      case 'date-desc':
-        return mapped.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-      case 'date-asc':
-        return mapped.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-      case 'rating-desc':
-        return mapped.sort((a, b) => b.starRating - a.starRating);
-      case 'rating-asc':
-        return mapped.sort((a, b) => a.starRating - b.starRating);
-      default:
-        return mapped;
-    }
+    // ✅ Client-side sorting fallback (server may already sort)
+    return mapped.sort((a, b) => {
+      switch (sort) {
+        case 'date-desc':
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case 'date-asc':
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case 'rating-desc':
+          return (b.starRating ?? 0) - (a.starRating ?? 0);
+        case 'rating-asc':
+          return (a.starRating ?? 0) - (b.starRating ?? 0);
+        default:
+          return 0;
+      }
+    });
   }, [bookmarks, sort]);
 
   if (!sortedBookmarks.length) {

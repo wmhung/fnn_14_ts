@@ -4,7 +4,6 @@ import { supabase } from './supabase';
 import { PAGE_SIZE } from './utils/constants';
 import type { Park, Bookmark, PaginationQuery } from '@/types/park';
 
-// import { auth } from './auth';
 /////////////
 // GET
 
@@ -24,20 +23,28 @@ export async function getPark(id: number): Promise<Park | null> {
   return data as Park;
 }
 
-// get park data and count
-// import and use GetParkListsParams type
+// ✅ get park data and count (with sorting + pagination)
 export async function getParkLists({
   email,
   page,
   query,
+  sortBy = 'date', // default sort column
+  sortOrder = 'desc', // default order: newest first
 }: PaginationQuery = {}): Promise<{ data: Park[]; count: number | null }> {
   let queryBuilder = supabase
     .from('parklist')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
+  // filtering
   if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
 
+  // ✅ sorting
+  queryBuilder = queryBuilder.order(sortBy, {
+    ascending: sortOrder === 'asc',
+  });
+
+  // pagination
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
@@ -47,7 +54,7 @@ export async function getParkLists({
   const { data, count, error } = await queryBuilder;
 
   if (error) {
-    console.error(error);
+    console.error('[getParkLists error]', error);
     throw new Error('Could not load park data');
   }
 
@@ -62,16 +69,16 @@ export async function getUserParkCount(email: string): Promise<number> {
     .eq('email', email);
 
   if (error) throw new Error(error.message);
-
-  return count ?? 0; // fallback to 0 if somehow null
+  return count ?? 0;
 }
 
-// get bookmarks data, sort and page
-// reuse the same GetParkListsParams type
+// ✅ get bookmarks data, sort and page
 export async function getBookmarkLists({
   email,
   page,
   query,
+  sortBy = 'date',
+  sortOrder = 'desc',
 }: PaginationQuery = {}): Promise<{ data: Bookmark[]; count: number | null }> {
   let queryBuilder = supabase
     .from('bookmark')
@@ -79,6 +86,11 @@ export async function getBookmarkLists({
     .eq('email', email);
 
   if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
+
+  // ✅ sorting
+  queryBuilder = queryBuilder.order(sortBy, {
+    ascending: sortOrder === 'asc',
+  });
 
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
@@ -89,7 +101,7 @@ export async function getBookmarkLists({
   const { data, count, error } = await queryBuilder;
 
   if (error) {
-    console.error(error);
+    console.error('[getBookmarkLists error]', error);
     throw new Error('Could not load bookmark data');
   }
 
@@ -106,7 +118,7 @@ export async function getBookmarksCount(
     .eq('email', email);
 
   if (error) {
-    console.error(error);
+    console.error('[getBookmarksCount error]', error);
     return { count: 0 };
   }
 
@@ -123,14 +135,14 @@ export async function getPhotosCount(
     .eq('email', email);
 
   if (error) {
-    console.error(error);
+    console.error('[getPhotosCount error]', error);
     return { count: 0 };
   }
 
   return { count };
 }
 
-// The average rating of parks
+// average park rating per user
 export async function getRating(
   email: string
 ): Promise<{ starRating: number }[]> {
@@ -140,26 +152,26 @@ export async function getRating(
     .eq('email', email);
 
   if (error) {
-    console.error(error);
+    console.error('[getRating error]', error);
     return [];
   }
 
   return data;
 }
 
-// The average rating of user feedback
+// average app rating
 export async function getAppRating(): Promise<{ appRating: number }[]> {
   const { data, error } = await supabase.from('feedbacks').select('appRating');
 
   if (error) {
-    console.error(error);
+    console.error('[getAppRating error]', error);
     return [];
   }
 
   return data;
 }
 
-// Users are uniquely identified by their email address
+// get user by email
 export async function getUser(
   email: string
 ): Promise<Record<string, any> | null> {
@@ -169,16 +181,26 @@ export async function getUser(
     .eq('email', email)
     .single();
 
+  if (error) {
+    console.error('[getUser error]', error);
+    return null;
+  }
+
   return data;
 }
 
-// Users data
+// get all users data
 export async function getUsersData(): Promise<Record<string, any>[]> {
   const { data, error } = await supabase
     .from('user')
     .select('*')
     .order('created_at', { ascending: true })
-    .throwOnError(); // Optional: ensures it throws if error occurs;
+    .throwOnError();
+
+  if (error) {
+    console.error('[getUsersData error]', error);
+    return [];
+  }
 
   return data;
 }
@@ -191,7 +213,7 @@ export async function createUser(
   const { data, error } = await supabase.from('user').insert([newUser]);
 
   if (error) {
-    console.error(error);
+    console.error('[createUser error]', error);
     throw new Error('User could not be created');
   }
 
@@ -216,7 +238,7 @@ export async function createFeedback({
   });
 
   if (error) {
-    console.error(error);
+    console.error('[createFeedback error]', error);
     throw new Error('Review could not be created');
   }
 
