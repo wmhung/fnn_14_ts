@@ -3,7 +3,7 @@
 import { supabase } from './supabase';
 import { PAGE_SIZE } from './utils/constants';
 import type { Park, Bookmark, PaginationQuery } from '@/types/park';
-import type { User } from '@/types/user';
+import type { User, UpdateUser } from '@/types/user';
 
 /////////////
 // GET
@@ -173,12 +173,15 @@ export async function getAppRating(): Promise<{ appRating: number }[]> {
 }
 
 // get user by email
+// get single user by email
 export async function getUser(
-  email: string
-): Promise<Record<string, any> | null> {
+  email: string | null
+): Promise<UpdateUser | null> {
+  if (!email) return null;
+
   const { data, error } = await supabase
     .from('user')
-    .select('*')
+    .select('fullName, email, numOfKids, gender, avatar, role')
     .eq('email', email)
     .single();
 
@@ -187,7 +190,7 @@ export async function getUser(
     return null;
   }
 
-  return data;
+  return data as UpdateUser;
 }
 
 // get all users data

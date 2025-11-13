@@ -8,3 +8,12 @@ export interface User {
   created_at: string;
   image?: string | null;
 }
+
+export type UpdateUser = {
+  fullName: string;
+  email: string;
+  numOfKids?: number;
+  gender?: string;
+  avatar?: string;
+  role: 'user' | 'owner';
+};

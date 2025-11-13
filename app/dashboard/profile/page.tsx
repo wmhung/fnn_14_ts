@@ -10,6 +10,14 @@ export default async function Page() {
   const session = await auth();
   const user = await getUser(session?.user.email);
 
+  if (!user) {
+    return (
+      <div className='mx-auto my-auto'>
+        <h1 className='flex mb-3 justify-center text-2xl'>User not found</h1>
+      </div>
+    );
+  }
+
   return (
     <div className='mx-auto my-auto'>
       <h1 className='flex mb-3 justify-center text-2xl'>Update your profile</h1>
