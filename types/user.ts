@@ -15,5 +15,5 @@ export type UpdateUser = {
   numOfKids?: number;
   gender?: string;
   avatar?: string;
-  role: 'user' | 'owner';
+  role: Role; // ✅ use Role ('user' | 'owner' | 'admin')
 };
