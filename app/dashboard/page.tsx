@@ -8,6 +8,7 @@ import {
   getUsersData,
   getUser,
 } from '../_lib/data-service';
+import type { User } from '@/types/user';
 import { PiParkDuotone } from 'react-icons/pi';
 import { FaRegImages, FaStar } from 'react-icons/fa';
 import { BsBookmarkStarFill } from 'react-icons/bs';
@@ -35,7 +36,8 @@ export default async function Page() {
   const userName = user?.fullName;
   const role = user?.role;
 
-  const usersData =
+  // ✅ Type usersData as User[]
+  const usersData: User[] =
     role === 'owner' || role === 'admin' ? await getUsersData() : [];
 
   // retrieve park and bookmark count

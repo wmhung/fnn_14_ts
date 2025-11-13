@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { PAGE_SIZE } from './utils/constants';
 import type { Park, Bookmark, PaginationQuery } from '@/types/park';
+import type { User } from '@/types/user';
 
 /////////////
 // GET
@@ -190,19 +191,19 @@ export async function getUser(
 }
 
 // get all users data
-export async function getUsersData(): Promise<Record<string, any>[]> {
+export async function getUsersData(): Promise<User[]> {
   const { data, error } = await supabase
     .from('user')
     .select('*')
-    .order('created_at', { ascending: true })
-    .throwOnError();
+    .order('created_at', { ascending: true });
 
   if (error) {
     console.error('[getUsersData error]', error);
     return [];
   }
 
-  return data;
+  // Ensure correct type
+  return (data ?? []) as User[];
 }
 
 // CREATE
