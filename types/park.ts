@@ -30,11 +30,11 @@ export type Bookmark = {
   [key: string]: any;
 };
 
-// ✅ Add these two for pagination and sorting
 export type PaginationQuery = {
   email?: string;
   page?: number;
   query?: string;
-  sortBy?: 'date' | 'starRating'; // more fields can be added if needed
+  sort?: string; // e.g. "date-desc"
+  sortBy?: 'date' | 'starRating';
   sortOrder?: 'asc' | 'desc';
 };
