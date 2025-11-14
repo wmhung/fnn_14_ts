@@ -11,7 +11,7 @@ type UpdateProfileFormProps = {
     numOfKids?: number;
     gender?: string;
     avatar?: string;
-    role: 'user' | 'owner'; // add role
+    role: 'user' | 'owner' | 'admin';
   };
   children?: ReactNode; // optional now
 };
