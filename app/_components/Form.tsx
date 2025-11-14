@@ -21,12 +21,14 @@ import type { Park } from '@/app/_lib/contexts/ParkContext';
 // Create a separate input type for park creation
 export type ParkInput = Omit<Park, 'id' | 'image'> & { image: File | string };
 
+export interface FormUser {
+  id?: string; // optional for OAuth users
+  email: string;
+  fullName?: string;
+}
+
 interface FormProps {
-  user: {
-    id: string;
-    email: string;
-    fullName?: string;
-  };
+  user: FormUser;
   userName?: string;
 }
 

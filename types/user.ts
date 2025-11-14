@@ -10,6 +10,7 @@ export interface User {
 }
 
 export type UpdateUser = {
+  id?: string; // optional
   fullName: string;
   email: string;
   numOfKids?: number;
