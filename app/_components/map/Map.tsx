@@ -30,11 +30,20 @@ type AiMarker = {
   title?: string;
 };
 
-const customIcon = new L.Icon({
+const defaultIcon = new L.Icon({
   iconUrl: markerIcon.src,
   shadowUrl: markerShadow.src,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [0, -50],
+});
+
+const activeIcon = new L.Icon({
+  iconUrl: markerIcon.src,
+  shadowUrl: markerShadow.src,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  className: 'leaflet-marker-active',
 });
 
 export default function Map() {
@@ -59,8 +68,9 @@ export default function Map() {
   const [aiMarker, setAiMarker] = useState<AiMarker | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [submittedQuestion, setSubmittedQuestion] = useState<string | null>(
-    null
+    null,
   );
+  const [activeParkId, setActiveParkId] = useState<number | null>(null);
 
   // 🔹 useRef typed for Leaflet Map
   const mapRef = useRef<L.Map | null>(null);
@@ -89,7 +99,7 @@ export default function Map() {
       mapRef.current.flyTo(
         [geolocationPosition.lat, geolocationPosition.lng],
         15,
-        { animate: true, duration: 1.5 }
+        { animate: true, duration: 1.5 },
       );
     }
   }, [geolocationPosition, hasClicked]);
@@ -100,7 +110,7 @@ export default function Map() {
       mapRef.current.flyTo(
         [currentPark.position.lat, currentPark.position.lng],
         16,
-        { animate: true, duration: 1.5 }
+        { animate: true, duration: 1.5 },
       );
     }
   }, [currentPark]);
@@ -204,7 +214,12 @@ export default function Map() {
             <Marker
               key={park.id}
               position={[park.position.lat, park.position.lng]}
-              icon={customIcon}
+              icon={activeParkId === park.id ? activeIcon : defaultIcon}
+              eventHandlers={{
+                click: () => {
+                  setActiveParkId(park.id);
+                },
+              }}
             >
               <Popup className='flex flex-col'>
                 <span className='leading-7'>
@@ -220,7 +235,7 @@ export default function Map() {
             </Marker>
           ))}
         {aiMarker?.coordinates?.length === 2 && (
-          <Marker position={aiMarker.coordinates} icon={customIcon}>
+          <Marker position={aiMarker.coordinates} icon={activeIcon}>
             <Popup>{aiMarker.title}</Popup>
           </Marker>
         )}

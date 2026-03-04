@@ -16,11 +16,11 @@ export default function ParkLists() {
     switch (sort) {
       case 'date-desc':
         return copy.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
       case 'date-asc':
         return copy.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
       case 'rating-desc':
         return copy.sort((a, b) => (b.starRating ?? 0) - (a.starRating ?? 0));

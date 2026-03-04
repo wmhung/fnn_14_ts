@@ -80,7 +80,7 @@ function reducer(state: BookmarkState, action: BookmarkAction): BookmarkState {
         ...state,
         isLoading: false,
         bookmarks: state.bookmarks.filter(
-          (bookmark) => bookmark.id !== action.payload
+          (bookmark) => bookmark.id !== action.payload,
         ),
         currentBookmark:
           state.currentBookmark?.id === action.payload
@@ -98,7 +98,7 @@ function reducer(state: BookmarkState, action: BookmarkAction): BookmarkState {
 
 // ---------------- Context ----------------
 const BookmarkContext = createContext<BookmarkContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // ---------------- Provider ----------------
@@ -141,7 +141,7 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'bookmark/loaded', payload: data as Bookmark });
       }
     },
-    [currentBookmark]
+    [currentBookmark],
   );
 
   // Create a bookmark

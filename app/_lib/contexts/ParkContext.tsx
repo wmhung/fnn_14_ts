@@ -99,7 +99,7 @@ const ParkContext = createContext<ParkContextType | undefined>(undefined);
 function ParkProvider({ children }: { children: ReactNode }) {
   const [{ parks, isLoading, currentPark, error }, dispatch] = useReducer(
     reducer,
-    initialState
+    initialState,
   );
 
   // Fetch all parks
@@ -136,7 +136,7 @@ function ParkProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'park/loaded', payload: data as Park });
       }
     },
-    [currentPark]
+    [currentPark],
   );
 
   // ✅ Create a new park (accepts File | string for image)
@@ -181,7 +181,7 @@ function ParkProvider({ children }: { children: ReactNode }) {
         await supabase.from('parklist').delete().eq('id', createdPark.id);
         console.error(storageError);
         throw new Error(
-          'Image could not be uploaded and the park was not created'
+          'Image could not be uploaded and the park was not created',
         );
       }
     }

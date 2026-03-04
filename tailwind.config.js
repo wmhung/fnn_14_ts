@@ -64,6 +64,7 @@ export default {
     screens: {
       '3xs': '288px',
       '2xs': '320px',
+      '1xs': '376px',
       mobile_map: '390px',
       xs: '480px',
       mobile_map_sm_3: '540px',

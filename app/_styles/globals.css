@@ -42,6 +42,10 @@
     box-shadow: inset 0 0 10px rgba(203, 213, 225, 0.3);
   }
 
+  .leaflet-marker-active {
+    filter: hue-rotate(90deg) saturate(1.5);
+  }
+
   @keyframes shift {
     0% {
       transform: translateX(10%) translateY(10%);

@@ -73,7 +73,7 @@ export async function getUserParkCount(email: string): Promise<number> {
   return count ?? 0;
 }
 
-// ✅ get bookmarks data, sort and page
+// get bookmarks data, sort and page
 export async function getBookmarkLists({
   email,
   page,
@@ -111,7 +111,7 @@ export async function getBookmarkLists({
 
 // bookmarks count
 export async function getBookmarksCount(
-  email: string
+  email: string,
 ): Promise<{ count: number }> {
   const { count, error } = await supabase
     .from('bookmark')
@@ -128,7 +128,7 @@ export async function getBookmarksCount(
 
 // photos count
 export async function getPhotosCount(
-  email: string
+  email: string,
 ): Promise<{ count: number }> {
   const { count, error } = await supabase
     .from('parklist')
@@ -145,7 +145,7 @@ export async function getPhotosCount(
 
 // average park rating per user
 export async function getRating(
-  email: string
+  email: string,
 ): Promise<{ starRating: number }[]> {
   const { data, error } = await supabase
     .from('parklist')
@@ -175,7 +175,7 @@ export async function getAppRating(): Promise<{ appRating: number }[]> {
 // get user by email
 // get single user by email
 export async function getUser(
-  email: string | null
+  email: string | null,
 ): Promise<UpdateUser | null> {
   if (!email) return null;
 
@@ -212,7 +212,7 @@ export async function getUsersData(): Promise<User[]> {
 // CREATE
 
 export async function createUser(
-  newUser: Record<string, any>
+  newUser: Record<string, any>,
 ): Promise<Record<string, any>[]> {
   const { data, error } = await supabase.from('user').insert([newUser]);
 

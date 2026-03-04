@@ -4,32 +4,64 @@ import ParkLayoutFloating from '../_components/ParkLayoutFloating';
 import LoginMessage from '../_components/LoginMessage';
 
 export const revalidate = 0;
-// page title for seo
 export const metadata = {
   title: 'Park List',
 };
 
+const PAGE_SIZE = 8; // same as your data-service PAGE_SIZE
+
 export default async function Page({ searchParams }: any) {
   const session = await auth();
-  // console.log(session);
   const email = session?.user?.email;
 
   if (!email) return <LoginMessage />;
 
-  const page = searchParams?.page ? Number(searchParams.page) : 1;
+  const page = Number(searchParams?.page) || 1;
   const query = searchParams?.query ?? '';
   const sort = searchParams?.sort ?? 'date-desc';
 
-  const { data: parkLists, count } = await getParkLists({
+  // split sort into sortBy and sortOrder
+  const [sortBy, sortOrder] = sort.split('-');
+
+  // fetch park list
+  const { data: parkLists, count: parkCount } = await getParkLists({
     page,
     query,
-    sort,
+    sortBy,
+    sortOrder,
     email,
   });
 
-  const { data: bookmarkLists } = await getBookmarkLists({ email });
+  // first fetch bookmark count
+  const { count: bookmarkCount } = await getBookmarkLists({
+    email,
+    query,
+    sortBy,
+    sortOrder,
+    page: 1, // fetch only to get count
+  });
 
-  const data = { parkLists, bookmarkLists, sort, query, page, count };
+  // clamp bookmark page to max pages
+  const totalBookmarkPages = Math.ceil((bookmarkCount ?? 0) / PAGE_SIZE) || 1;
+  const bookmarkPage = Math.min(page, totalBookmarkPages);
+
+  // fetch bookmark list with clamped page
+  const { data: bookmarkLists } = await getBookmarkLists({
+    email,
+    query,
+    sortBy,
+    sortOrder,
+    page: bookmarkPage,
+  });
+
+  const data = {
+    parkLists,
+    bookmarkLists,
+    sort,
+    query,
+    page,
+    count: parkCount,
+  };
 
   return (
     <div>

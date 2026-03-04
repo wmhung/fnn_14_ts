@@ -40,7 +40,7 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
         position?.lng ?? 0
       }`}
       prefetch={false}
-      className='flex justify-start items-center gap-3 max-w-[22rem] text-sm cursor-pointer no-underline m-[6px] p-[0.3rem] sm_2:p-[0.3rem] rounded-[7px] border border-slate-300 dark:shadow-accent-600 hover:border-accent-600 hover:shadow-accent-600 hover:shadow-lg transition-all duration-300'
+      className='flex justify-start items-center gap-3 max-w-[22rem] text-lg 1xs:text-base cursor-pointer no-underline m-[6px] p-[0.3rem] sm_2:p-[0.3rem] rounded-[7px] border border-slate-300 dark:shadow-accent-600 hover:border-accent-600 hover:shadow-accent-600 hover:shadow-lg transition-all duration-300'
     >
       <span className='w-[6rem] break-words'>{parkName}</span>
       <span className='min-w-[6rem]'>{formatDate(date)}</span>

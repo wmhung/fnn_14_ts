@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { register as registerUser } from '../_lib/actions'; // ✅ fixed filename typo
 
-// ✅ Infer TypeScript type from your Zod schema
+// ✅ Infer TypeScript type from Zod schema
 type RegisterData = z.infer<typeof registerSchema>;
 
 function SignupForm() {
