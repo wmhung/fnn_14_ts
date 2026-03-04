@@ -7,14 +7,17 @@ export const metadata = {
 
 export default async function Page() {
   const session = await auth();
-  const provider = session?.user?.provider?.toUpperCase();
+  // const provider = session?.user?.provider?.toUpperCase();
+  const provider = session?.user?.provider;
+  const isOAuthUser = provider === 'google' || provider === 'github';
 
   return (
     <div className='mx-auto my-auto'>
-      {provider ? (
+      {isOAuthUser ? (
         <>
           <p className='flex mb-3 justify-center text-2xl'>
-            Opps!... Not available for {provider} authenticated user
+            Opps!... Not available for {provider?.toUpperCase()} authenticated
+            user
           </p>
         </>
       ) : (
