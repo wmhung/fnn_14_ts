@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useBookmarks } from '../_lib/contexts/BookmarkContext';
+import { useParks } from '../_lib/contexts/ParkContext';
 import { useRouter } from 'next/navigation';
 import { IoBookmark } from 'react-icons/io5';
 import type { Bookmark } from '@/types/park';
@@ -22,10 +23,13 @@ const formatDate = (date: string | Date): string => {
 export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
   const router = useRouter();
   const { deleteBookmark } = useBookmarks();
+  const { getPark } = useParks();
   const { id, parkName, date, parkId, position, starRating } = bookmark;
 
   const handleRemove = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
     try {
       await deleteBookmark(id);
       router.refresh();
@@ -34,8 +38,14 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
     }
   };
 
+  function handleClick() {
+    getPark(bookmark.parkId);
+  }
+
   return (
     <Link
+      //  event handler on the Link component
+      onClick={handleClick}
       href={`/parklist/${parkId}/?lat=${position?.lat ?? 0}&lng=${
         position?.lng ?? 0
       }`}

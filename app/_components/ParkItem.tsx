@@ -23,7 +23,7 @@ const formatDate = (date: string | Date): string => {
 };
 
 function ParkItem({ park }: ParkItemProps) {
-  const { deletePark } = useParks();
+  const { deletePark, getPark } = useParks();
   const { bookmarks, updateBookmark } = useBookmarks();
   const router = useRouter();
 
@@ -81,6 +81,8 @@ function ParkItem({ park }: ParkItemProps) {
 
   return (
     <Link
+      // event handler on the Link component
+      onClick={() => getPark(id)}
       className='flex justify-start items-center gap-3 max-w-[22rem] text-lg 1xs:text-base
      cursor-pointer no-underline m-[5px] p-[0.5rem] sm_2:p-[0.3rem] rounded-[7px] border border-slate-300  dark:shadow-accent-600 hover:border-accent-600 hover:shadow-accent-600 hover:shadow-lg transition-all duration-300'
       prefetch={false}

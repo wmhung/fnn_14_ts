@@ -35,7 +35,6 @@ const defaultIcon = new L.Icon({
   shadowUrl: markerShadow.src,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
-  popupAnchor: [0, -50],
 });
 
 const activeIcon = new L.Icon({
@@ -43,6 +42,7 @@ const activeIcon = new L.Icon({
   shadowUrl: markerShadow.src,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [0, -50],
   className: 'leaflet-marker-active',
 });
 
@@ -104,14 +104,41 @@ export default function Map() {
     }
   }, [geolocationPosition, hasClicked]);
 
-  // 👇 NEW: recenter when a park is selected from list
+  // detect the resize of the map container
   useEffect(() => {
-    if (currentPark && mapRef.current) {
-      mapRef.current.flyTo(
-        [currentPark.position.lat, currentPark.position.lng],
-        16,
-        { animate: true, duration: 1.5 },
-      );
+    if (
+      currentPark?.position?.lat &&
+      currentPark?.position?.lng &&
+      mapRef.current
+    ) {
+      // 1️⃣ Force Leaflet to recalc size
+      mapRef.current.invalidateSize();
+
+      // 2️⃣ Small delay allows layout to finish shrinking
+      setTimeout(() => {
+        mapRef.current?.flyTo(
+          [currentPark.position.lat, currentPark.position.lng],
+          16,
+          { animate: true, duration: 1.5 },
+        );
+      }, 200);
+    }
+  }, [currentPark]);
+  // 👇 NEW: recenter when a park is selected from list
+  // useEffect(() => {
+  //   if (currentPark && mapRef.current) {
+  //     mapRef.current.flyTo(
+  //       [currentPark.position.lat, currentPark.position.lng],
+  //       16,
+  //       { animate: true, duration: 1.5 },
+  //     );
+  //   }
+  // }, [currentPark]);
+
+  // change marker color while clicking the park item in the list
+  useEffect(() => {
+    if (currentPark) {
+      setActiveParkId(currentPark.id);
     }
   }, [currentPark]);
 
@@ -218,6 +245,18 @@ export default function Map() {
               eventHandlers={{
                 click: () => {
                   setActiveParkId(park.id);
+
+                  if (mapRef.current) {
+                    mapRef.current.invalidateSize();
+
+                    setTimeout(() => {
+                      mapRef.current?.flyTo(
+                        [park.position.lat, park.position.lng],
+                        16,
+                        { animate: true, duration: 1.2 },
+                      );
+                    }, 200);
+                  }
                 },
               }}
             >
