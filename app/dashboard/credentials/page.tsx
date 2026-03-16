@@ -12,20 +12,21 @@ export default async function Page() {
   const isOAuthUser = provider === 'google' || provider === 'github';
 
   return (
-    <div className='mx-auto my-auto'>
+    <div className='flex flex-1 items-center justify-center min-h-screen'>
       {isOAuthUser ? (
         <>
-          <p className='flex mb-3 justify-center text-2xl'>
-            Opps!... Not available for {provider?.toUpperCase()} authenticated
-            user
+          <p className='text-2xl text-center'>
+            Opps!... Not available for {provider} authenticated user
           </p>
         </>
       ) : (
         <>
-          <h1 className='flex mb-3 justify-center text-2xl'>
-            Update your credentials
-          </h1>
-          <UpdatePasswordForm />
+          <div className='flex flex-col items-center -translate-y-20'>
+            <h1 className='text-center text-2xl mb-3'>
+              Update your credentials
+            </h1>
+            <UpdatePasswordForm />
+          </div>
         </>
       )}
     </div>

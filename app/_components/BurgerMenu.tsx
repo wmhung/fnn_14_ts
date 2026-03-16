@@ -15,6 +15,8 @@ export default function BurgerMenu() {
   const { data: session } = useSession(); // <- 🔑 Use session directly
   const user = session?.user;
   // console.log(user);
+  const provider = session?.user?.provider;
+  const isCredentials = provider === 'credentials';
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -101,7 +103,9 @@ export default function BurgerMenu() {
                 {[
                   { href: '/dashboard', label: 'Dashboard' },
                   { href: '/dashboard/profile', label: 'Profile' },
-                  { href: '/dashboard/credentials', label: 'Credentials' },
+                  ...(isCredentials
+                    ? [{ href: '/dashboard/credentials', label: 'Credentials' }]
+                    : []),
                 ].map(({ href, label }) => (
                   <li key={href}>
                     <Link
