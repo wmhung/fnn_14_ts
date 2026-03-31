@@ -58,9 +58,7 @@ export default function Map() {
     getPosition,
   } = useGeolocation();
 
-  const [mapPosition, setMapPosition] = useState<[number, number]>([
-    25.0457, 121.5379,
-  ]);
+  const [mapPosition] = useState<[number, number]>([25.0457, 121.5379]);
   const [mapLat, mapLng] = useUrlPosition();
   const [hasClicked, setHasClicked] = useState<boolean>(false);
 
@@ -124,16 +122,6 @@ export default function Map() {
       }, 200);
     }
   }, [currentPark]);
-  // 👇 NEW: recenter when a park is selected from list
-  // useEffect(() => {
-  //   if (currentPark && mapRef.current) {
-  //     mapRef.current.flyTo(
-  //       [currentPark.position.lat, currentPark.position.lng],
-  //       16,
-  //       { animate: true, duration: 1.5 },
-  //     );
-  //   }
-  // }, [currentPark]);
 
   // change marker color while clicking the park item in the list
   useEffect(() => {
