@@ -9,7 +9,7 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
   .object({
-    fullName: z.string().min(1, { message: 'Full name is required' }).trim(),
+    full_name: z.string().min(1, { message: 'Full name is required' }).trim(),
     email: z.string().email({ message: 'Invalid email address' }),
     password: z
       .string()
@@ -35,6 +35,6 @@ export const updatePasswordSchema = z
   });
 
 export const updateUserSchema = z.object({
-  numOfKids: z.union([z.string(), z.number(), z.null()]).optional(),
+  num_of_kids: z.union([z.string(), z.number(), z.null()]).optional(),
   gender: z.string().optional(),
 });

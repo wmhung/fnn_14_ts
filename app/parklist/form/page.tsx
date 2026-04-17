@@ -12,19 +12,20 @@ export default async function Page() {
   // Get user profile from Supabase
   const userProfile = await getUser(email);
 
-  const fullName = userProfile?.fullName || session?.user?.name || 'Anonymous';
+  const full_name =
+    userProfile?.full_name || session?.user?.name || 'Anonymous';
 
   // Create minimal user object for Form
   const userForForm: FormUser = {
     id: userProfile?.id, // optional for OAuth
     email: email || '',
-    fullName,
+    full_name,
   };
 
   return (
     <div className='flex items-center justify-center'>
       <Suspense fallback={<Spinner />}>
-        <Form user={userForForm} userName={fullName} />
+        <Form user={userForForm} user_name={full_name} />
       </Suspense>
     </div>
   );

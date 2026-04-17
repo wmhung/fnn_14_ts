@@ -17,11 +17,11 @@ export default function BookmarkList() {
     // Map and normalize each bookmark
     const mapped: BookmarkType[] = bookmarks.map((bookmark, idx: number) => ({
       id: bookmark.id ?? idx, // fallback if id is missing
-      parkId: bookmark.parkId,
-      parkName: bookmark.parkName ?? `Park ${bookmark.parkId}`,
+      park_id: bookmark.park_id,
+      park_name: bookmark.park_name ?? `Park ${bookmark.park_id}`,
       date: bookmark.date,
       position: bookmark.position,
-      starRating: bookmark.starRating ?? 0,
+      star_rating: bookmark.star_rating ?? 0,
     }));
 
     // ✅ Client-side sorting fallback (server may already sort)

@@ -13,7 +13,7 @@ import { supabase } from '@/app/_lib/supabase';
 // ----- Types -----
 interface UserRole {
   id: number;
-  fullName: string;
+  full_name: string;
   email: string;
   role: string;
   created_at?: string;
@@ -64,7 +64,7 @@ function reducer(state: UserRoleState, action: any): UserRoleState {
         ...state,
         isLoading: false,
         userRoles: state.userRoles.filter(
-          (userRole) => userRole.id !== action.payload
+          (userRole) => userRole.id !== action.payload,
         ),
         currentUserRole:
           state.currentUserRole?.id === action.payload
@@ -82,7 +82,7 @@ function reducer(state: UserRoleState, action: any): UserRoleState {
 
 // ----- Context -----
 const UserRoleContext = createContext<UserRoleContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // ----- Provider -----

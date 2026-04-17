@@ -57,21 +57,26 @@ export async function updatePassword(formData: FormData) {
 }
 
 // update user profile
-export async function updateUser(formData: FormData) {
+export async function updateUser(prevState: any, formData: FormData) {
   const session = await auth();
   if (!session) throw new Error('You must be logged in');
 
   const role = formData.get('role');
-  const numOfKids = formData.get('numOfKids');
+  const numOfKids = formData.get('num_of_kids');
   const gender = formData.get('gender');
   const avatarFile = formData.get('avatar') as File | null;
 
-  const updateData: Record<string, any> = { role, numOfKids, gender };
+  const updateData: Record<string, any> = {
+    role,
+    num_of_kids: numOfKids,
+    gender,
+  };
 
   if (avatarFile && avatarFile.size > 0) {
     const avatarName = `${Math.floor(Math.random() * 1000 + 1)}-${
       avatarFile.name
     }`.replaceAll('/', '');
+
     const avatarPath = `${supabaseUrl}/storage/v1/object/public/avatar/${avatarName}`;
 
     const { error: storageError } = await supabase.storage
@@ -81,7 +86,9 @@ export async function updateUser(formData: FormData) {
         upsert: true,
       });
 
-    if (storageError) throw new Error('Avatar upload failed');
+    if (storageError) {
+      return { error: 'Avatar upload failed' };
+    }
 
     updateData.avatar = avatarPath;
   }
@@ -91,16 +98,21 @@ export async function updateUser(formData: FormData) {
     .update(updateData)
     .eq('email', session.user.email);
 
-  if (error) throw new Error('Profile could not be updated');
+  if (error) {
+    console.error(error);
+    return { error: error.message };
+  }
 
   revalidatePath('/dashboard/profile');
+
+  return { success: true };
 }
 
 /////// credentials authentication ///////
 
 // Login
 export async function login(
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const email = formData.get('email');
   const password = formData.get('password');
@@ -133,7 +145,7 @@ export async function login(
 
 // ✅ Register
 export async function register(
-  formData: FormData
+  formData: FormData,
 ): Promise<{ error?: string }> {
   try {
     const fullName = formData.get('fullName');

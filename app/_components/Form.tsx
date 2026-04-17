@@ -15,21 +15,19 @@ import StarRating from './StarRating';
 import FeedbackModal from './FeedbackModal';
 import 'react-datepicker/dist/react-datepicker.css';
 
-// ----------------- Types -----------------
 import type { Park } from '@/app/_lib/contexts/ParkContext';
 
-// Create a separate input type for park creation
 export type ParkInput = Omit<Park, 'id' | 'image'> & { image: File | string };
 
 export interface FormUser {
-  id?: string; // optional for OAuth users
+  id?: string;
   email: string;
-  fullName?: string;
+  full_name?: string;
 }
 
 interface FormProps {
   user: FormUser;
-  userName?: string;
+  user_name?: string;
 }
 
 interface FeedbackData {
@@ -39,17 +37,17 @@ interface FeedbackData {
 
 const BASE_URL = 'https://api.bigdatacloud.net/data/reverse-geocode-client';
 
-export default function Form({ user, userName }: FormProps) {
+export default function Form({ user, user_name }: FormProps) {
   const [lat, lng] = useUrlPosition();
   const { createPark, isLoading } = useParks();
   const router = useRouter();
-  const { email, fullName } = user;
+  const { email, full_name } = user;
 
-  const displayName = fullName || userName || 'Anonymous';
+  const displayName = full_name || user_name || 'Anonymous';
 
-  // ----------------- Local States -----------------
   const [isLoadingGeocoding, setIsLoadingGeocoding] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const [dist, setDist] = useState('');
   const [parkName, setParkName] = useState('');
@@ -60,15 +58,14 @@ export default function Form({ user, userName }: FormProps) {
   const [image, setImage] = useState<File | null>(null);
   const [starRating, setStarRating] = useState(0);
   const [geocodingError, setGeocodingError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  // ----------------- Handlers -----------------
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setImage(e.target.files[0]);
     }
   };
 
-  // Fetch city data from coordinates
   useEffect(() => {
     if (!lat || !lng) return;
 
@@ -80,7 +77,7 @@ export default function Form({ user, userName }: FormProps) {
 
         if (!data.countryCode) {
           throw new Error(
-            "That doesn't seem to be a city. Click somewhere else."
+            "That doesn't seem to be a city. Click somewhere else.",
           );
         }
 
@@ -96,7 +93,6 @@ export default function Form({ user, userName }: FormProps) {
     fetchCityData();
   }, [lat, lng]);
 
-  // ----------------- Feedback Submit -----------------
   async function handleFeedbackSubmit({ rating, review }: FeedbackData) {
     try {
       await createFeedback({
@@ -113,15 +109,19 @@ export default function Form({ user, userName }: FormProps) {
     }
   }
 
-  // ----------------- Park Form Submit -----------------
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!parkName || !date || !image) return;
+
+    if (!parkName || !date || !image) {
+      setErrorMsg('Please fill all required fields');
+      return;
+    }
+
+    setErrorMsg('');
 
     let countBefore = 0;
     try {
       countBefore = await getUserParkCount(email);
-      console.log('Park count before insert:', countBefore);
     } catch (error: any) {
       console.error('Error in getUserParkCount:', error.message);
     }
@@ -129,160 +129,132 @@ export default function Form({ user, userName }: FormProps) {
     const newPark: ParkInput = {
       dist,
       city,
-      parkName,
-      date: date.toISOString(), // store as string to match Supabase column type
+      park_name: parkName,
+      date: date.toISOString(),
       notes,
       recreation,
       position: { lat, lng },
-      image, // File is allowed by ParkInput
-      starRating,
+      image,
+      star_rating: starRating,
       email,
-      userName: displayName,
+      user_name: displayName,
     };
 
-    await createPark(newPark);
+    try {
+      await createPark(newPark);
+      setSuccess(true);
+    } catch (err: any) {
+      console.error('Create park failed:', err.message);
+      setErrorMsg('Failed to add park. Please try again.');
+      return;
+    }
 
     if (countBefore === 0) {
-      setShowFeedbackModal(true); // Show modal for first park
+      setShowFeedbackModal(true);
     } else {
-      router.push('/parklist');
-      router.refresh();
+      setTimeout(() => {
+        router.push('/parklist');
+        router.refresh();
+      }, 1200);
     }
   }
 
-  // ----------------- Conditional Rendering -----------------
   if (isLoadingGeocoding) return <Spinner />;
   if (!lat && !lng)
     return <Message message='Start by clicking somewhere on the map' />;
   if (geocodingError) return <Message message={geocodingError} />;
 
-  // ----------------- JSX -----------------
+  if (success) {
+    return <Message message='✅ Park added successfully!' />;
+  }
+
   return (
     <>
       <form
         className='flex flex-col w-[30rem] h-[83vh] mx-3 px-2 py-3 overflow-y-scroll overflow-x-hidden gap-[2px] list-none border rounded-lg inset-shadow'
         onSubmit={submit}
       >
-        {/* City */}
+        {errorMsg && (
+          <p className='text-red-500 text-center font-semibold'>{errorMsg}</p>
+        )}
+
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold m-1' htmlFor='city'>
-            City name
-          </label>
+          <label className='uppercase font-extrabold m-1'>City name</label>
           <input
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='city'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setCity(e.target.value)}
             value={city}
           />
         </div>
 
-        {/* District */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold m-1' htmlFor='dist'>
-            District name
-          </label>
+          <label className='uppercase font-extrabold m-1'>District name</label>
           <input
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='dist'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setDist(e.target.value)}
             value={dist}
           />
         </div>
 
-        {/* Park Name */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='parkName'>
-            Park name
-          </label>
+          <label className='uppercase font-extrabold my-1'>Park name</label>
           <input
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='parkName'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setParkName(e.target.value)}
             value={parkName}
             required
           />
         </div>
 
-        {/* Date */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='date'>
-            When did you go to {parkName}?
-          </label>
+          <label className='uppercase font-extrabold my-1'>Date</label>
           <DatePicker
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='date'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(date: Date | null) => setDate(date ?? new Date())}
             selected={date}
             dateFormat='dd/MM/yyyy'
           />
         </div>
 
-        {/* Rating */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='starRating'>
-            Ratings
-          </label>
-          <StarRating
-            className='dark:text-slate-50'
-            maxRating={5}
-            size={35}
-            onSetRating={setStarRating}
-          />
+          <label className='uppercase font-extrabold my-1'>Ratings</label>
+          <StarRating maxRating={5} size={35} onSetRating={setStarRating} />
         </div>
 
-        {/* Notes */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='notes'>
-            Did we have fun at {parkName}?
-          </label>
+          <label className='uppercase font-extrabold my-1'>Notes</label>
           <textarea
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='notes'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setNotes(e.target.value)}
             value={notes}
             required
           />
         </div>
 
-        {/* Recreation */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='recreation'>
-            Recreation Facilities in {parkName}
-          </label>
+          <label className='uppercase font-extrabold my-1'>Recreation</label>
           <textarea
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600'
-            id='recreation'
+            className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setRecreation(e.target.value)}
             value={recreation}
             required
           />
         </div>
 
-        {/* Image Upload */}
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1' htmlFor='image'>
-            Upload photos
-          </label>
-          <input
-            className='bg-slate-200 border border-slate-300 p-1 rounded-sm dark:text-slate-800 outline-accent-600 w-[250px]'
-            id='image'
-            type='file'
-            onChange={handleFileChange}
-            disabled={isLoading}
-          />
+          <label className='uppercase font-extrabold my-1'>Upload photos</label>
+          <input type='file' onChange={handleFileChange} disabled={isLoading} />
           {isLoading && <p>Uploading...</p>}
         </div>
 
-        {/* Buttons */}
-        <div className='flex justify-between p-6 text-sm'>
-          <Button className='text-slate-50' disabled={isLoading}>
+        <div className='flex justify-between p-6 text-sm text-slate-200'>
+          <Button disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Add'}
           </Button>
           <BackButton />
         </div>
       </form>
 
-      {/* Feedback Modal */}
       {showFeedbackModal && (
         <FeedbackModal
           onClose={() => {

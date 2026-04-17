@@ -23,9 +23,9 @@ export default function ParkLists() {
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
       case 'rating-desc':
-        return copy.sort((a, b) => (b.starRating ?? 0) - (a.starRating ?? 0));
+        return copy.sort((a, b) => (b.star_rating ?? 0) - (a.star_rating ?? 0));
       case 'rating-asc':
-        return copy.sort((a, b) => (a.starRating ?? 0) - (b.starRating ?? 0));
+        return copy.sort((a, b) => (a.star_rating ?? 0) - (b.star_rating ?? 0));
       default:
         return copy;
     }

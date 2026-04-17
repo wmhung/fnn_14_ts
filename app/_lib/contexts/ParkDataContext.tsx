@@ -5,10 +5,10 @@ import type { Park } from '@/types/park';
 
 export type Bookmark = {
   id: number;
-  parkId: number;
-  parkName: string;
+  park_id: number;
+  park_name: string;
   date: string;
-  starRating: number;
+  star_rating: number;
   position?: {
     lat: number;
     lng: number;

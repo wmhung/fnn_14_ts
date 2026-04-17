@@ -14,14 +14,14 @@ import { supabase } from '@/app/_lib/supabase';
 // ---------------- Types ----------------
 export interface Bookmark {
   id?: number;
-  parkId: number;
-  parkName: string;
+  park_id: number;
+  park_name: string;
   date: string | Date; // ISO string
   position?: {
     lat: number;
     lng: number;
   };
-  starRating?: number;
+  star_rating?: number;
   [key: string]: any; // optional extra fields like notes, image, city, email
 }
 
@@ -41,7 +41,7 @@ type BookmarkAction =
   | { type: 'rejected'; payload: string };
 
 interface BookmarkContextType extends BookmarkState {
-  getBookmark: (parkId: number) => Promise<void>;
+  getBookmark: (park_id: number) => Promise<void>;
   createBookmark: (bookmark: Omit<Bookmark, 'id'>) => Promise<void>;
   deleteBookmark: (id: number) => Promise<void>;
   updateBookmark: (bookmark: Omit<Bookmark, 'id'>) => Promise<void>;
@@ -122,17 +122,17 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Fetch a single bookmark by parkId
+  // Fetch a single bookmark by park_id
   const getBookmark = useCallback(
-    async (parkId: number) => {
-      if (currentBookmark?.parkId === parkId) return;
+    async (park_id: number) => {
+      if (currentBookmark?.park_id === park_id) return;
 
       dispatch({ type: 'loading' });
 
       const { data, error } = await supabase
         .from('bookmark')
         .select('*')
-        .eq('parkId', parkId)
+        .eq('park_id', park_id)
         .single();
 
       if (error) {
@@ -187,7 +187,7 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
       const { data: existingBookmark, error: fetchError } = await supabase
         .from('bookmark')
         .select('*')
-        .eq('parkId', newBookmark.parkId)
+        .eq('park_id', newBookmark.park_id)
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;

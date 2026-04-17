@@ -15,15 +15,15 @@ export interface Park {
   id: number;
   city: string;
   dist: string;
-  parkName: string;
+  park_name: string;
   date: string;
   notes?: string;
   recreation?: string;
   position?: { lat: number; lng: number } | null;
   image?: string;
-  starRating?: number;
+  star_rating?: number;
   email?: string;
-  userName?: string;
+  user_name?: string;
 }
 
 // ✅ new: input type for creating parks
@@ -139,26 +139,39 @@ function ParkProvider({ children }: { children: ReactNode }) {
     [currentPark],
   );
 
-  // ✅ Create a new park (accepts File | string for image)
-  async function createPark(newPark: ParkInput): Promise<Park[] | undefined> {
+  // Create a new park (accepts File | string for image)
+  async function createPark(newPark: ParkInput) {
     dispatch({ type: 'loading' });
 
     let imagePath: string | null = null;
-    let imageName: string | null = null;
 
+    // 1️⃣ Upload first (if File)
     if (newPark.image instanceof File) {
-      imageName = `${Math.floor(Math.random() * 1000 + 1)}-${
+      const imageName = `${Math.floor(Math.random() * 1000 + 1)}-${
         newPark.image.name
       }`.replaceAll('/', '');
+
+      const { error: storageError } = await supabase.storage
+        .from('photos')
+        .upload(imageName, newPark.image);
+
+      if (storageError) {
+        dispatch({ type: 'rejected', payload: storageError.message });
+        return;
+      }
+
       imagePath = `${supabaseUrl}/storage/v1/object/public/photos/${imageName}`;
     } else if (typeof newPark.image === 'string') {
       imagePath = newPark.image;
     }
 
-    // 1️⃣ Insert park into Supabase
+    // 2️⃣ Remove File completely
+    const { image, ...rest } = newPark;
+
+    // 3️⃣ Insert clean data
     const { data, error } = await supabase
       .from('parklist')
-      .insert([{ ...newPark, image: imagePath }])
+      .insert([{ ...rest, image: imagePath }])
       .select();
 
     if (error) {
@@ -167,23 +180,9 @@ function ParkProvider({ children }: { children: ReactNode }) {
     }
 
     const createdPark = data?.[0] as Park;
+
     if (createdPark) {
       dispatch({ type: 'park/created', payload: createdPark });
-    }
-
-    // 2️⃣ Upload image only if it's a File
-    if (newPark.image instanceof File && imageName) {
-      const { error: storageError } = await supabase.storage
-        .from('photos')
-        .upload(imageName, newPark.image);
-
-      if (storageError && createdPark) {
-        await supabase.from('parklist').delete().eq('id', createdPark.id);
-        console.error(storageError);
-        throw new Error(
-          'Image could not be uploaded and the park was not created',
-        );
-      }
     }
 
     return data as Park[];
@@ -191,11 +190,6 @@ function ParkProvider({ children }: { children: ReactNode }) {
 
   // Delete a park by ID
   async function deletePark(id: number) {
-    if (!id) {
-      dispatch({ type: 'rejected', payload: 'Invalid park ID' });
-      return;
-    }
-
     dispatch({ type: 'loading' });
 
     const { error } = await supabase.from('parklist').delete().eq('id', id);
@@ -206,7 +200,7 @@ function ParkProvider({ children }: { children: ReactNode }) {
     }
 
     dispatch({ type: 'park/deleted', payload: id });
-    fetchParks();
+    await fetchParks();
   }
 
   // Auto-fetch parks on mount

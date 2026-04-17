@@ -5,9 +5,9 @@ export type Position = {
 
 export interface Park {
   id: number;
-  parkName: string;
+  park_name: string;
   date: string | Date;
-  starRating?: number;
+  star_rating?: number;
   notes?: string;
   city?: string;
   dist?: string;
@@ -15,18 +15,18 @@ export interface Park {
   position?: Position | null;
   image?: string;
   email?: string;
-  userName?: string;
+  user_name?: string;
 }
 
 export type Bookmark = {
   id: number;
-  parkId: number;
-  parkName: string;
+  park_id: number;
+  park_name: string;
   date: string | Date;
-  starRating: number;
+  star_rating: number;
   position?: Position;
   email?: string;
-  userName?: string;
+  user_name?: string;
   [key: string]: any;
 };
 
@@ -35,6 +35,6 @@ export type PaginationQuery = {
   page?: number;
   query?: string;
   sort?: string; // e.g. "date-desc"
-  sortBy?: 'date' | 'starRating';
+  sortBy?: 'date' | 'star_rating';
   sortOrder?: 'asc' | 'desc';
 };

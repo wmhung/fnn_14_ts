@@ -29,23 +29,40 @@ export async function getParkLists({
   email,
   page,
   query,
-  sortBy = 'date', // default sort column
-  sortOrder = 'desc', // default order: newest first
-}: PaginationQuery = {}): Promise<{ data: Park[]; count: number | null }> {
+  sort = 'date-desc',
+}: PaginationQuery & { sort?: string } = {}): Promise<{
+  data: Park[];
+  count: number | null;
+}> {
   let queryBuilder = supabase
     .from('parklist')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
   // filtering
-  if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
+  if (query) {
+    queryBuilder = queryBuilder.ilike('park_name', `%${query}%`);
+  }
 
-  // ✅ sorting
-  queryBuilder = queryBuilder.order(sortBy, {
-    ascending: sortOrder === 'asc',
-  });
+  // -----------------------------
+  // ✅ SORT MAPPING (IMPORTANT FIX)
+  // -----------------------------
+  const [field, order] = sort.split('-');
 
+  const sortColumnMap: Record<string, string> = {
+    date: 'date',
+    rating: 'star_rating',
+  };
+
+  const sortBy = sortColumnMap[field] ?? 'date';
+
+  const ascending = order === 'asc';
+
+  queryBuilder = queryBuilder.order(sortBy, { ascending });
+
+  // -----------------------------
   // pagination
+  // -----------------------------
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
@@ -56,7 +73,7 @@ export async function getParkLists({
 
   if (error) {
     console.error('[getParkLists error]', error);
-    throw new Error('Could not load park data');
+    throw new Error(error.message);
   }
 
   return { data: (data as Park[]) ?? [], count };
@@ -78,24 +95,45 @@ export async function getBookmarkLists({
   email,
   page,
   query,
-  sortBy = 'date',
-  sortOrder = 'desc',
-}: PaginationQuery = {}): Promise<{ data: Bookmark[]; count: number | null }> {
+  sort = 'date-desc',
+}: PaginationQuery & { sort?: string } = {}): Promise<{
+  data: Bookmark[];
+  count: number | null;
+}> {
   let queryBuilder = supabase
     .from('bookmark')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
-  if (query) queryBuilder = queryBuilder.ilike('parkName', `%${query}%`);
+  // -----------------------------
+  // filtering (optional)
+  // -----------------------------
+  if (query) {
+    queryBuilder = queryBuilder.ilike('park_name', `%${query}%`);
+  }
 
-  // ✅ sorting
-  queryBuilder = queryBuilder.order(sortBy, {
-    ascending: sortOrder === 'asc',
-  });
+  // -----------------------------
+  // sorting (same pattern as parks)
+  // -----------------------------
+  const [field, order] = sort.split('-');
 
+  const sortColumnMap: Record<string, string> = {
+    date: 'date',
+    rating: 'star_rating', // if bookmarks include rating
+  };
+
+  const sortBy = sortColumnMap[field] ?? 'date';
+  const ascending = order === 'asc';
+
+  queryBuilder = queryBuilder.order(sortBy, { ascending });
+
+  // -----------------------------
+  // pagination
+  // -----------------------------
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
+
     queryBuilder = queryBuilder.range(from, to);
   }
 
@@ -103,10 +141,13 @@ export async function getBookmarkLists({
 
   if (error) {
     console.error('[getBookmarkLists error]', error);
-    throw new Error('Could not load bookmark data');
+    throw new Error(error.message);
   }
 
-  return { data: (data as Bookmark[]) ?? [], count };
+  return {
+    data: (data as Bookmark[]) ?? [],
+    count,
+  };
 }
 
 // bookmarks count
@@ -181,7 +222,7 @@ export async function getUser(
 
   const { data, error } = await supabase
     .from('user')
-    .select('fullName, email, numOfKids, gender, avatar, role')
+    .select('full_name, email, num_of_kids, gender, avatar, role')
     .eq('email', email)
     .single();
 

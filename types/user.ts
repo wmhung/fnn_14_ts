@@ -2,7 +2,7 @@ export type Role = 'user' | 'owner' | 'admin';
 
 export interface User {
   id: string;
-  fullName: string;
+  full_name: string;
   email: string;
   role: Role;
   created_at: string;
@@ -11,9 +11,9 @@ export interface User {
 
 export type UpdateUser = {
   id?: string; // optional
-  fullName: string;
+  full_name: string;
   email: string;
-  numOfKids?: number;
+  num_of_kids?: number;
   gender?: string;
   avatar?: string;
   role: Role; // ✅ use Role ('user' | 'owner' | 'admin')

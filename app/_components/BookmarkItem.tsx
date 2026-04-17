@@ -24,7 +24,7 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
   const router = useRouter();
   const { deleteBookmark } = useBookmarks();
   const { getPark } = useParks();
-  const { id, parkName, date, parkId, position, starRating } = bookmark;
+  const { id, park_name, date, park_id, position, star_rating } = bookmark;
 
   const handleRemove = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -39,22 +39,22 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
   };
 
   function handleClick() {
-    getPark(bookmark.parkId);
+    getPark(bookmark.park_id);
   }
 
   return (
     <Link
       //  event handler on the Link component
       onClick={handleClick}
-      href={`/parklist/${parkId}/?lat=${position?.lat ?? 0}&lng=${
+      href={`/parklist/${park_id}/?lat=${position?.lat ?? 0}&lng=${
         position?.lng ?? 0
       }`}
       prefetch={false}
       className='flex justify-start items-center gap-3 max-w-[22rem] text-lg 1xs:text-base cursor-pointer no-underline m-[6px] p-[0.3rem] sm_2:p-[0.3rem] rounded-[7px] border border-slate-300 dark:shadow-accent-600 hover:border-accent-600 hover:shadow-accent-600 hover:shadow-lg transition-all duration-300'
     >
-      <span className='w-[6rem] break-words'>{parkName}</span>
+      <span className='w-[6rem] break-words'>{park_name}</span>
       <span className='min-w-[6rem]'>{formatDate(date)}</span>
-      <span className='min-w-[2rem]'>{starRating} ⭐️</span>
+      <span className='min-w-[2rem]'>{star_rating} ⭐️</span>
       <button
         className='min-w-[2rem] h-[1.6rem] cursor-pointer'
         onClick={handleRemove}

@@ -31,25 +31,31 @@ function ParkItem({ park }: ParkItemProps) {
     id,
     city,
     dist,
-    parkName,
+    park_name,
     date,
     notes,
     recreation,
     position,
     image,
-    starRating,
+    star_rating,
     email,
   } = park;
 
-  function handleClick(e: MouseEvent<HTMLButtonElement>) {
+  async function handleClick(e: MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
-    deletePark(id);
-    router.refresh();
+
+    try {
+      await deletePark(id);
+      router.refresh();
+      console.log('Park deleted');
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
   }
 
   const isBookmarked = bookmarks.some(
-    (bookmark: Bookmark) => bookmark.parkId === id,
+    (bookmark: Bookmark) => bookmark.park_id === id,
   );
 
   async function handleToggleBookmark(e: MouseEvent<HTMLButtonElement>) {
@@ -57,23 +63,23 @@ function ParkItem({ park }: ParkItemProps) {
     e.stopPropagation();
 
     const bookmarkData: Bookmark = {
-      parkId: id,
+      park_id: id,
       city,
       dist,
-      parkName,
+      park_name,
       date: String(date),
       notes,
       recreation,
       position,
       image,
-      starRating,
+      star_rating,
       email,
     };
 
     try {
       await updateBookmark(bookmarkData);
-      console.log('Bookmark toggled successfully');
       router.refresh();
+      console.log('Bookmark toggled successfully');
     } catch (error) {
       console.error('Failed to toggle bookmark:', error);
     }
@@ -90,9 +96,9 @@ function ParkItem({ park }: ParkItemProps) {
         position?.lng ?? 0
       }`}
     >
-      <span className='w-[6rem] break-words'>{parkName}</span>
+      <span className='w-[6rem] break-words'>{park_name}</span>
       <span className='max-w-[6rem]'>{formatDate(date)}</span>
-      <span className='max-w-[3rem]'>{starRating} ⭐️</span>
+      <span className='max-w-[3rem]'>{star_rating} ⭐️</span>
       <button
         className='max-w-[3rem] h-[1.6rem] cursor-pointer'
         onClick={handleToggleBookmark}
