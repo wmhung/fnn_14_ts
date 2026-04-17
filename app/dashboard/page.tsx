@@ -33,7 +33,7 @@ export default async function Page() {
 
   // get user data from supabase
   const user = email ? await getUser(email) : null;
-  const userName = user?.fullName;
+  const userName = user?.full_name;
   const role = user?.role;
 
   // ✅ Type usersData as User[]
@@ -70,8 +70,8 @@ export default async function Page() {
     ratings.length > 0
       ? average(
           ratings.map((rating) =>
-            role === 'owner' ? rating.appRating : rating.starRating
-          )
+            role === 'owner' ? rating.appRating : rating.starRating,
+          ),
         )
       : 0;
 
@@ -119,7 +119,7 @@ export default async function Page() {
             </div>
           </div>
 
-          <div className='hidden md:block'>
+          <div>
             {(role === 'owner' || role === 'admin') && (
               <UserTable users={usersData} currentUserEmail={email} />
             )}
