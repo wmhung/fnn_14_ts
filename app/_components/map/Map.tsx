@@ -14,6 +14,7 @@ import { useUrlPosition } from '../../_lib/hooks/useUrlPosition';
 import { BiSolidNavigation } from 'react-icons/bi';
 import { useParks } from '@/app/_lib/contexts/ParkContext';
 import { Park } from '@/app/_lib/contexts/ParkContext';
+import { useRouter } from 'next/navigation';
 
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -69,6 +70,7 @@ export default function Map() {
     null,
   );
   const [activeParkId, setActiveParkId] = useState<number | null>(null);
+  const router = useRouter();
 
   // 🔹 useRef typed for Leaflet Map
   const mapRef = useRef<L.Map | null>(null);
@@ -94,11 +96,14 @@ export default function Map() {
       geolocationPosition?.lng &&
       mapRef.current
     ) {
-      mapRef.current.flyTo(
-        [geolocationPosition.lat, geolocationPosition.lng],
-        15,
-        { animate: true, duration: 1.5 },
-      );
+      const { lat, lng } = geolocationPosition;
+
+      mapRef.current?.flyTo([lat, lng], 15, {
+        animate: true,
+        duration: 1.5,
+      });
+
+      router.push(`/parklist/form?lat=${lat}&lng=${lng}`);
     }
   }, [geolocationPosition, hasClicked]);
 
