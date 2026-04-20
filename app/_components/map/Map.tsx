@@ -250,14 +250,14 @@ export default function Map() {
             >
               <Popup className='flex flex-col'>
                 <span className='leading-7'>
-                  <StarDisplay rating={park.starRating} />
+                  <StarDisplay rating={park.star_rating} />
                 </span>
                 <hr />
-                <span className='leading-8 text-base'>{park.parkName}</span>
+                <span className='leading-8 text-base'>{park.park_name}</span>
                 <hr />
                 <span className='leading-8 text-base'>{park.notes}</span>
                 <hr />
-                <span className='leading-8 text-base'>by {park.userName}</span>
+                <span className='leading-8 text-base'>by {park.user_name}</span>
               </Popup>
             </Marker>
           ))}
