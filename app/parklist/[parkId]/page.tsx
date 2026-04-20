@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
   const park = await getPark(params.parkId);
   return {
-    title: park?.parkName ? `Park ${park.parkName}` : 'Park Detail',
+    title: park?.park_name ? `Park ${park.park_name}` : 'Park Detail',
   };
 }
 

@@ -21,12 +21,12 @@ export default async function Page() {
 
   // Map user to UpdateUser type
   const updateUser: UpdateUser = {
-    fullName: user.fullName,
+    full_name: user.full_name,
     email: user.email,
     role: user.role === 'user' || user.role === 'owner' ? user.role : 'user', // fallback for admin
     avatar: (user as any).image,
     gender: (user as any).gender,
-    numOfKids: (user as any).numOfKids,
+    num_of_kids: (user as any).num_of_kids,
   };
 
   return (
