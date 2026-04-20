@@ -53,11 +53,11 @@ function SignupForm() {
             className='border bg-slate-50 py-1 px-3 rounded-sm shadow-md'
             type='text'
             placeholder='FULL NAME'
-            {...register('fullName')}
+            {...register('full_name')}
           />
-          {errors.fullName && (
+          {errors.full_name && (
             <span className='text-sm text-red-500'>
-              {errors.fullName.message}
+              {errors.full_name.message}
             </span>
           )}
         </label>
