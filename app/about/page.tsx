@@ -16,16 +16,20 @@ export default function Page() {
             Our story
           </h1>
 
-          <p className='text-justify md:text-left  text-slate-500 my-2 text-base/9'>
-            <strong className='text-slate-700'>Finding Next Neverland</strong>{' '}
+          <p className='text-justify md:text-left  text-slate-500 my-2 text-base/9 dark:text-slate-400'>
+            <strong className='text-slate-700 dark:text-slate-200'>
+              Finding Next Neverland
+            </strong>{' '}
             is a web application designed for parents to track and document the
             places they visit with their children. Whether it’s a park, museum,
             playground, or any fun spot, ParentTrack helps families record their
             experiences and build a personal map of memorable outings.
           </p>
 
-          <p className='text-center md:text-left  text-slate-500 my-2 text-base/9'>
-            <strong className='text-slate-700'>Key Features</strong>
+          <p className='text-center md:text-left  text-slate-500 my-2 text-base/9 dark:text-slate-400'>
+            <strong className='text-slate-700 dark:text-slate-200'>
+              Key Features
+            </strong>
             <br /> ✅ Interactive Map
             <br />✅ Upload Photos
             <br /> ✅ See other&#39; rating

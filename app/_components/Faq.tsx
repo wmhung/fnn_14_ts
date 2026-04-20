@@ -41,7 +41,7 @@ export default function FAQPage() {
 
   return (
     <div className='max-w-2xl mx-auto px-4 py-12'>
-      <h1 className='text-4xl text-slate-700 font-bold mb-8 text-center sticky top-0 z-10 py-4'>
+      <h1 className='text-4xl text-slate-700 font-bold mb-8 text-center sticky top-0 z-10 py-4 dark:text-slate-200'>
         Frequently Asked Questions
       </h1>
       <div className='space-y-4'>
@@ -54,7 +54,7 @@ export default function FAQPage() {
               className='w-full text-left flex justify-between items-center'
               onClick={() => toggleFAQ(index)}
             >
-              <span className='text-lg text-slate-700 font-bold'>
+              <span className='text-lg text-slate-700 font-bold dark:text-slate-200'>
                 {faq.question}
               </span>
               <span className='text-2xl'>
@@ -62,7 +62,7 @@ export default function FAQPage() {
               </span>
             </button>
             <div
-              className={`mt-2 text-slate-500 transition-all duration-300 ${
+              className={`mt-2 text-slate-500 transition-all duration-300 dark:text-slate-400 ${
                 openIndex === index
                   ? 'max-h-40 opacity-100'
                   : 'max-h-0 opacity-0 overflow-hidden'
