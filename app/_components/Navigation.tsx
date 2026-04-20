@@ -33,7 +33,7 @@ export default async function Navigation() {
         </li>
         <li>
           {session?.user?.provider === 'credentials' ? (
-            <NaviDropdown2 fullName={user?.fullName} avatar={user?.avatar} />
+            <NaviDropdown2 fullName={user?.full_name} avatar={user?.avatar} />
           ) : session?.user ? (
             <NaviDropdown
               name={session?.user.name}
