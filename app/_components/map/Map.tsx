@@ -85,6 +85,7 @@ export default function Map() {
   }, [mapLat, mapLng]);
 
   function handleGetPosition() {
+    clearAiState(); // Clear AI marker and title
     getPosition();
     setHasClicked(true); // ✅ user clicked
   }
@@ -208,6 +209,11 @@ export default function Map() {
       setInputValue('');
     }
   }
+  // Clear AI marker and title in manual mode
+  function clearAiState() {
+    setSubmittedQuestion(null);
+    setAiMarker(null);
+  }
 
   return (
     <div className='flex-1 relative h-full w-lg rounded-lg'>
@@ -228,7 +234,7 @@ export default function Map() {
         />
         <InvalidateSizeHandler />{' '}
         {/* 👈 ensures centering works after resize */}
-        <DetectClick />
+        <DetectClick onMapClick={clearAiState} />
         {Array.isArray(parks) &&
           parks.map((park) => (
             <Marker
@@ -237,6 +243,8 @@ export default function Map() {
               icon={activeParkId === park.id ? activeIcon : defaultIcon}
               eventHandlers={{
                 click: () => {
+                  clearAiState(); // Clear AI marker and title
+
                   setActiveParkId(park.id);
 
                   if (mapRef.current) {
@@ -302,14 +310,17 @@ export default function Map() {
           <input
             type='text'
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            onFocus={() => {
-              setSubmittedQuestion(null);
-              setAiMarker(null);
+            onChange={(e) => {
+              setInputValue(e.target.value);
             }}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            onFocus={
+              clearAiState
+              // setSubmittedQuestion(null);
+              // setAiMarker(null);
+            }
             placeholder='Ask me for recommendation...'
-            className='w-full px-4 py-3 border rounded-xl'
+            className='w-full px-4 py-3 border rounded-xl dark:bg-slate-800'
           />
           <button
             type='button'
