@@ -31,6 +31,8 @@ type AiMarker = {
   title?: string;
 };
 
+type Mode = 'ai' | 'manual';
+
 const defaultIcon = new L.Icon({
   iconUrl: markerIcon.src,
   shadowUrl: markerShadow.src,
