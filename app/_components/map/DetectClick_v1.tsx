@@ -1,19 +1,27 @@
 'use client';
+
 import { useRouter } from 'next/navigation';
 import { useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
-export default function DetectClick() {
+type DetectClickProps = {
+  onMapClick?: () => void; // 🔥 optional callback from parent
+};
+
+export default function DetectClick({ onMapClick }: DetectClickProps) {
   const router = useRouter();
 
   useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
 
-      // 🔹 Update the URL
+      // Enter "manual mode" → clear AI state
+      onMapClick?.();
+
+      // Update URL (form sync)
       router.push(`/parklist/form?lat=${lat}&lng=${lng}`);
 
-      // 🔹 Recenter the map directly
+      // Move map
       e.target.flyTo([lat, lng], 15, {
         animate: true,
         duration: 1.5,
@@ -21,5 +29,5 @@ export default function DetectClick() {
     },
   });
 
-  return null; // 👈 important for react-leaflet hooks
+  return null; // 👈 required for react-leaflet hooks
 }

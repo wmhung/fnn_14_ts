@@ -2,9 +2,10 @@
 
 import { useEffect, useState, FormEvent } from 'react';
 import { useUrlPosition } from '@/app/_lib/hooks/useUrlPosition';
-import { useParks } from '@/app/_lib/contexts/ParkContext';
+import { useParks } from '../_lib/contexts/ParkContext';
 import { useRouter } from 'next/navigation';
 import { getUserParkCount, createFeedback } from '@/app/_lib/data-service';
+import type { Park } from '../_lib/contexts/ParkContext';
 
 import DatePicker from 'react-datepicker';
 import Button from './Button';
@@ -14,8 +15,6 @@ import Spinner from './Spinner';
 import StarRating from './StarRating';
 import FeedbackModal from './FeedbackModal';
 import 'react-datepicker/dist/react-datepicker.css';
-
-import type { Park } from '@/app/_lib/contexts/ParkContext';
 
 export type ParkInput = Omit<Park, 'id' | 'image'> & { image: File | string };
 

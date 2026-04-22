@@ -43,7 +43,10 @@ function Sort() {
   }, []);
 
   return (
-    <div className='relative flex flex-shrink-0 text-sm ml-2' ref={dropdownRef}>
+    <div
+      className='relative flex flex-shrink-0 text-sm ml-2 '
+      ref={dropdownRef}
+    >
       <button
         onClick={() => setOpen((prev) => !prev)}
         className='flex items-center gap-1 px-2 w-[3rem] border border-slate-300 text-slate-400 rounded-md shadow-sm bg-transparent hover:border-accent-600 dark:text-slate-400 transition-all duration-300'
@@ -55,15 +58,15 @@ function Sort() {
       </button>
 
       {open && (
-        <ul className='absolute top-8 left-0 mt-2 w-40 border border-slate-400 bg-slate-50 rounded-md shadow-lg z-50'>
+        <ul className='absolute top-8 left-0 mt-2 w-[150px] border border-slate-400 bg-slate-50 rounded-md shadow-lg z-50 dark:bg-slate-800 '>
           {sortOptions.map((option) => (
             <li key={option.value}>
               <button
                 onClick={() => handleSort(option.value)}
-                className={`block w-full text-left px-4 py-2 hover:bg-accent-100 ${
+                className={`block w-full text-left px-4 py-2 hover:bg-accent-100 dark:hover:bg-accent-600 ${
                   activeSort === option.value
-                    ? 'font-semibold text-accent-600'
-                    : 'text-gray-700'
+                    ? 'font-black text-accent-600 dark:text-slate-50 '
+                    : 'text-slate-800 dark:text-slate-400 '
                 }`}
               >
                 {option.label}

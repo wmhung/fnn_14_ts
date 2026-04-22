@@ -70,24 +70,11 @@ export default function Map() {
     null,
   );
   const [activeParkId, setActiveParkId] = useState<number | null>(null);
-  const [mode, setMode] = useState<Mode>('manual');
   const router = useRouter();
+
   // 🔹 useRef typed for Leaflet Map
   const mapRef = useRef<L.Map | null>(null);
 
-  // MODE HELPERS
-  const enterManualMode = () => setMode('manual');
-  const enterAiMode = () => setMode('ai');
-
-  // Clear AI ONLY when switching to manual mode
-  useEffect(() => {
-    if (mode === 'manual') {
-      setAiMarker(null);
-      setSubmittedQuestion(null);
-    }
-  }, [mode]);
-
-  // URLPOSITION SYNC
   useEffect(() => {
     if (mapLat && mapLng && mapRef.current) {
       mapRef.current.flyTo([mapLat, mapLng], 16, {
@@ -98,8 +85,7 @@ export default function Map() {
   }, [mapLat, mapLng]);
 
   function handleGetPosition() {
-    enterManualMode(); // switch mode
-
+    clearAiState(); // Clear AI marker and title
     getPosition();
     setHasClicked(true); // ✅ user clicked
   }
@@ -209,9 +195,12 @@ export default function Map() {
 
       const data: AiMarker = await res.json();
 
-      if (data?.coordinates?.length === 2) {
+      if (
+        data &&
+        Array.isArray(data.coordinates) &&
+        data.coordinates.length === 2
+      ) {
         setAiMarker(data);
-        enterAiMode(); // 🔥 switch mode here
       }
     } catch (err) {
       console.error('AI location fetch error:', err);
@@ -245,7 +234,7 @@ export default function Map() {
         />
         <InvalidateSizeHandler />{' '}
         {/* 👈 ensures centering works after resize */}
-        <DetectClick enterManualMode={enterManualMode} />
+        <DetectClick onMapClick={clearAiState} />
         {Array.isArray(parks) &&
           parks.map((park) => (
             <Marker
@@ -308,7 +297,7 @@ export default function Map() {
         </button>
       </div>
 
-      {mode === 'ai' && submittedQuestion && (
+      {submittedQuestion && (
         <div className='absolute top-[5rem] w-full flex justify-center z-30'>
           <h1 className='text-xl font-bold text-slate-50 p-2 bg-accent-600 rounded-md shadow-xl'>
             {submittedQuestion}

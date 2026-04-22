@@ -5,23 +5,21 @@ import { useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
 type DetectClickProps = {
-  onMapClick?: () => void; // 🔥 optional callback from parent
+  enterManualMode: () => void;
 };
 
-export default function DetectClick({ onMapClick }: DetectClickProps) {
+export default function DetectClick({ enterManualMode }: DetectClickProps) {
   const router = useRouter();
 
   useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
 
-      // ✅ Enter "manual mode" → clear AI state
-      onMapClick?.();
+      // switch to manual mode
+      enterManualMode();
 
-      // ✅ Update URL (form sync)
       router.push(`/parklist/form?lat=${lat}&lng=${lng}`);
 
-      // ✅ Move map
       e.target.flyTo([lat, lng], 15, {
         animate: true,
         duration: 1.5,
@@ -29,5 +27,5 @@ export default function DetectClick({ onMapClick }: DetectClickProps) {
     },
   });
 
-  return null; // 👈 required for react-leaflet hooks
+  return null;
 }
