@@ -1,68 +1,83 @@
 import Image from 'next/image';
 import image1 from '@/public/image1.png';
 import Link from 'next/link';
+import { FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 
 export const metadata = {
   title: 'About',
 };
-export default function Page() {
-  // page title
 
+const features = [
+  'Interactive map',
+  'Upload photos',
+  "See others' ratings",
+  'Share your comments',
+];
+
+export default function Page() {
   return (
-    <div className='flex 2xs:flex-2 xs:flex-1 justify-center items-center mx-5 px-2 text-xl'>
-      <div className='flex flex-col max-w-[40rem]'>
-        <div className='my-5 mx-3 px-3'>
-          <h1 className='text-left 2xs:text-center md:text-justify text-2xl md:text-3xl mb-5 text-accent-500 font-extrabold'>
+    <div className='w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-16'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center'>
+        {/* CONTENT */}
+        <div className='space-y-6'>
+          <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
+            About
+          </span>
+
+          <h1 className='text-3xl sm:text-4xl md:text-5xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'>
             Our story
           </h1>
 
-          <p className='text-justify md:text-left  text-slate-500 my-2 text-base/9 dark:text-slate-400'>
-            <strong className='text-slate-700 dark:text-slate-200'>
+          <p className='text-base sm:text-lg text-gray-700 dark:text-slate-300 leading-relaxed'>
+            <strong className='text-gray-900 dark:text-slate-100 font-semibold'>
               Finding Next Neverland
             </strong>{' '}
             is a web application designed for parents to track and document the
-            places they visit with their children. Whether it’s a park, museum,
-            playground, or any fun spot, ParentTrack helps families record their
-            experiences and build a personal map of memorable outings.
+            places they visit with their children. Whether it&apos;s a park,
+            museum, playground, or any other fun spot, we help families record
+            their experiences and build a personal map of memorable outings.
           </p>
 
-          <p className='text-center md:text-left  text-slate-500 my-2 text-base/9 dark:text-slate-400'>
-            <strong className='text-slate-700 dark:text-slate-200'>
-              Key Features
-            </strong>
-            <br /> ✅ Interactive Map
-            <br />✅ Upload Photos
-            <br /> ✅ See other&#39; rating
-            <br />✅ Share your comments
-          </p>
+          <div>
+            <h2 className='text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3'>
+              Key features
+            </h2>
+            <ul className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              {features.map((feature) => (
+                <li
+                  key={feature}
+                  className='flex items-center gap-2 text-sm text-gray-700 dark:text-slate-200'
+                >
+                  <FaCheckCircle className='shrink-0 text-emerald-500 dark:text-emerald-400 w-4 h-4' />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <div className='text-center md:text-left  my-7'>
+          <div className='pt-2'>
             <Link
-              href='/parklist'
-              className='bg-accent-600 px-8 py-4 text-primary-50 text-lg font-semibold rounded-xl hover:bg-accent-200 hover:text-primary-950 transition-all'
+              href='/placelist'
+              className='group inline-flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-primary-50 px-6 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition'
             >
-              Start to track
+              Start exploring
+              <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
             </Link>
           </div>
-          <div className='block max-w-[40rem] lg:hidden py-3'>
+        </div>
+
+        {/* IMAGE */}
+        <div className='order-first lg:order-last'>
+          <div className='relative rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-slate-700 shadow-sm hover:shadow-md transition'>
             <Image
-              className='rounded-md shadow-lg'
               src={image1}
               placeholder='blur'
               alt='Family sitting around a fire pit in front of cabin'
               quality={80}
+              className='w-full h-auto'
             />
           </div>
         </div>
-      </div>
-      <div className='hidden flex-col max-w-[25rem] lg:flex'>
-        <Image
-          className='rounded-md shadow-lg'
-          src={image1}
-          placeholder='blur'
-          alt='Family sitting around a fire pit in front of cabin'
-          quality={80}
-        />
       </div>
     </div>
   );

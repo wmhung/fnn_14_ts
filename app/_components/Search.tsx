@@ -9,13 +9,13 @@ export default function Search() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  // const { replace } = useRouter();
 
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
 
   const handleSearch = useDebouncedCallback((term) => {
-    // console.log(`Searching... ${term}`);
+    const currentQuery = searchParams.get('query') ?? '';
+    if (term === currentQuery) return;
 
     const params = new URLSearchParams(searchParams.toString());
     if (term) {
@@ -23,8 +23,8 @@ export default function Search() {
     } else {
       params.delete('query');
     }
-    router.push(`${pathname}?${params.toString()}`);
-    // replace(`${pathname}?${params.toString()}`);
+    params.set('page', '1'); // reset pagination
+    router.replace(`${pathname}?${params.toString()}`); // don't pollute history
   }, 1000);
 
   useEffect(() => {

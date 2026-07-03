@@ -15,10 +15,13 @@ export default function DetectClick({ enterManualMode }: DetectClickProps) {
     click: (e) => {
       const { lat, lng } = e.latlng;
 
-      // switch to manual mode
+      // switch to manual mode (unchanged — still clears AI state on every click)
       enterManualMode();
 
-      router.push(`/parklist/form?lat=${lat}&lng=${lng}`);
+      const target = e.originalEvent?.target as HTMLElement | null;
+      if (target?.closest('button, a, .leaflet-popup')) return;
+
+      router.push(`/placelist/form?lat=${lat}&lng=${lng}`);
 
       e.target.flyTo([lat, lng], 15, {
         animate: true,

@@ -15,7 +15,6 @@ export const registerSchema = z
       .string()
       .min(8, { message: 'Password must be at least 8 characters' }),
     confirmPassword: z.string(),
-    role: z.string().default('user'), // update for input field role
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -38,3 +37,22 @@ export const updateUserSchema = z.object({
   num_of_kids: z.union([z.string(), z.number(), z.null()]).optional(),
   gender: z.string().optional(),
 });
+
+export const requestResetSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    token: z
+      .string()
+      .min(1, { message: 'This link is invalid or has expired.' }),
+    password: z
+      .string()
+      .min(8, { message: 'Password must be at least 8 characters' }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });

@@ -1,16 +1,12 @@
 import '@/app/_styles/globals.css';
 import { Raleway, Press_Start_2P, Tektur, Exo_2 } from 'next/font/google';
-import { ParkProvider } from './_lib/contexts/ParkContext';
+import { PlaceProvider } from './_lib/contexts/PlaceContext';
 import { BookmarkProvider } from './_lib/contexts/BookmarkContext';
+import { LocationProvider } from './_lib/contexts/LocationContext';
 import { UserRoleProvider } from './_lib/contexts/UserRoleContext';
 import { Providers } from './_lib/providers';
 import Header from './_components/Header';
 
-// const pixelfont = Tektur({
-//   subsets: ['latin'],
-//   display: 'swap',
-//   weight: '600',
-// });
 const raleway = Raleway({ subsets: ['latin'] });
 
 export const metadata = {
@@ -20,12 +16,12 @@ export const metadata = {
     default: 'Welcome | Finding Next Neverland',
   },
   // website description for seo
-  description: 'Explore parks and places, and have fun with your kids.',
+  description: 'Explore new places and have fun with your kids.',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang='en' className='mx-0'>
+    <html lang='en' className='mx-0' suppressHydrationWarning>
       <head>
         {/* Inject dark mode preference script */}
         <script
@@ -51,12 +47,14 @@ export default function RootLayout({ children }) {
       >
         <Providers>
           <Header />
-          <div className='flex-none 2xs:flex-2 xs:flex-1 mx-0 my-0 grid z-0'>
+          <div className='flex-none 2xs:flex-1 xs:flex-1 mx-0 my-0 grid z-0'>
             <main className='max-w-7xl w-full mx-auto my-auto'>
               <UserRoleProvider>
-                <ParkProvider>
-                  <BookmarkProvider>{children}</BookmarkProvider>
-                </ParkProvider>
+                <PlaceProvider>
+                  <BookmarkProvider>
+                    <LocationProvider>{children}</LocationProvider>
+                  </BookmarkProvider>
+                </PlaceProvider>
               </UserRoleProvider>
             </main>
           </div>

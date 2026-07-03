@@ -2,46 +2,107 @@
 
 import { supabase } from './supabase';
 import { PAGE_SIZE } from './utils/constants';
-import type { Park, Bookmark, PaginationQuery } from '@/types/park';
+import type {
+  Place,
+  Bookmark,
+  PaginationQuery,
+  Visit,
+  VisitInput,
+} from '@/types/place';
 import type { User, UpdateUser } from '@/types/user';
+import { unstable_noStore as noStore } from 'next/cache';
 
 /////////////
 // GET
 
-// get single park
-export async function getPark(id: number): Promise<Park | null> {
+// get single place
+export async function getPlace(id: number): Promise<Place | null> {
   const { data, error } = await supabase
-    .from('parklist')
+    .from('placelist')
     .select('*')
     .eq('id', id)
     .single();
 
   if (error) {
-    console.error('[getPark error]', error);
+    console.error('[getPlace error]', error);
     return null;
   }
 
-  return data as Park;
+  return data as Place;
 }
 
-// ✅ get park data and count (with sorting + pagination)
-export async function getParkLists({
+/////////////
+// REPEAT VISITS
+
+// Log a repeat visit. The insert + counter bump run atomically inside the
+// log_visit Postgres function (see supabase/log_visit.sql) so visit_count
+// can't drift. Returns the new total.
+export async function logVisit({
+  placeId,
+  email,
+  rating,
+  note,
+  visitedAt,
+}: VisitInput): Promise<{ visit_id: number; visit_count: number }> {
+  const { data, error } = await supabase.rpc('log_visit', {
+    p_place_id: placeId,
+    p_email: email,
+    p_rating: rating,
+    p_note: note ?? null,
+    p_visited_at: visitedAt ?? new Date().toISOString(),
+  });
+
+  if (error) {
+    console.error('[logVisit error]', error);
+    throw new Error(error.message);
+  }
+
+  // The function "returns table", so Supabase hands back an array of one row.
+  const row = (Array.isArray(data) ? data[0] : data) as {
+    visit_id: number;
+    visit_count: number;
+  };
+  return { visit_id: row.visit_id, visit_count: row.visit_count };
+}
+
+// A place's visit history, newest first (own visits only).
+export async function getVisits(
+  placeId: number,
+  email: string,
+): Promise<Visit[]> {
+  const { data, error } = await supabase
+    .from('visits')
+    .select('id, place_id, visited_at, visit_rating, note, created_at')
+    .eq('place_id', placeId)
+    .eq('email', email)
+    .order('visited_at', { ascending: false });
+
+  if (error) {
+    console.error('[getVisits error]', error);
+    return [];
+  }
+
+  return (data ?? []) as Visit[];
+}
+
+// ✅ get place data and count (with sorting + pagination)
+export async function getPlaceLists({
   email,
   page,
   query,
   sort = 'date-desc',
 }: PaginationQuery & { sort?: string } = {}): Promise<{
-  data: Park[];
+  data: Place[];
   count: number | null;
 }> {
   let queryBuilder = supabase
-    .from('parklist')
+    .from('placelist')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
   // filtering
   if (query) {
-    queryBuilder = queryBuilder.ilike('park_name', `%${query}%`);
+    queryBuilder = queryBuilder.ilike('place_name', `%${query}%`);
   }
 
   // -----------------------------
@@ -72,25 +133,32 @@ export async function getParkLists({
   const { data, count, error } = await queryBuilder;
 
   if (error) {
-    console.error('[getParkLists error]', error);
+    console.error('[getPlaceLists error]', error);
     throw new Error(error.message);
   }
 
-  return { data: (data as Park[]) ?? [], count };
+  return { data: (data as Place[]) ?? [], count };
 }
 
-// get user park count
-export async function getUserParkCount(email: string): Promise<number> {
+// get user place count
+export async function getUserPlaceCount(email: string): Promise<number> {
+  noStore(); // ← always read live; otherwise Next caches the count and it goes stale
+
   const { count, error } = await supabase
-    .from('parklist')
-    .select('*', { count: 'exact', head: true })
+    .from('placelist')
+    .select('*', { count: 'exact' })
     .eq('email', email);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('[getUserPlaceCount error]', error);
+    throw new Error(error.message);
+  }
   return count ?? 0;
 }
 
-// get bookmarks data, sort and page
+// get bookmarks data, sort and page — JOINs through placelist for fresh data,
+// then flattens the response to preserve the old denormalized shape so the
+// bookmarks-tab UI stays unchanged.
 export async function getBookmarkLists({
   email,
   page,
@@ -102,38 +170,40 @@ export async function getBookmarkLists({
 }> {
   let queryBuilder = supabase
     .from('bookmark')
-    .select('*', { count: 'exact' })
+
+    .select('id, email, place_id, created_at, placelist!inner(*)', {
+      count: 'exact',
+    })
     .eq('email', email);
 
-  // -----------------------------
-  // filtering (optional)
-  // -----------------------------
+  // filtering through the joined table (place_name lives on placelist)
+
   if (query) {
-    queryBuilder = queryBuilder.ilike('park_name', `%${query}%`);
+    queryBuilder = queryBuilder.ilike('placelist.place_name', `%${query}%`);
   }
 
-  // -----------------------------
-  // sorting (same pattern as parks)
-  // -----------------------------
+  // sorting — same field names as places, but the columns live on placelist
+
   const [field, order] = sort.split('-');
 
   const sortColumnMap: Record<string, string> = {
     date: 'date',
-    rating: 'star_rating', // if bookmarks include rating
+    rating: 'star_rating',
   };
 
   const sortBy = sortColumnMap[field] ?? 'date';
   const ascending = order === 'asc';
 
-  queryBuilder = queryBuilder.order(sortBy, { ascending });
+  queryBuilder = queryBuilder.order(sortBy, {
+    foreignTable: 'placelist',
+    ascending,
+  });
 
-  // -----------------------------
   // pagination
-  // -----------------------------
+
   if (page) {
     const from = (page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-
     queryBuilder = queryBuilder.range(from, to);
   }
 
@@ -144,16 +214,49 @@ export async function getBookmarkLists({
     throw new Error(error.message);
   }
 
+  // use placelist data
+  const flattened = ((data ?? []) as any[]).map((row) => {
+    const { placelist: place, ...bookmark } = row;
+    return {
+      ...(place ?? {}),
+      ...bookmark,
+    };
+  }) as Bookmark[];
+
   return {
-    data: (data as Bookmark[]) ?? [],
+    data: flattened,
     count,
   };
+}
+
+export async function updatePlace(
+  id: number,
+  email: string,
+  patch: Partial<Place>,
+): Promise<Place> {
+  // Strip fields the user shouldn't be able to overwrite
+  const { id: _omit, email: _omitEmail, ...safePatch } = patch as any;
+
+  const { data, error } = await supabase
+    .from('placelist')
+    .update(safePatch)
+    .eq('id', id)
+    .eq('email', email) // ownership guard — DB-level
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[updatePlace error]', error);
+    throw new Error(error.message);
+  }
+  return data as Place;
 }
 
 // bookmarks count
 export async function getBookmarksCount(
   email: string,
 ): Promise<{ count: number }> {
+  noStore(); // always read live — counts must not be served stale from cache
   const { count, error } = await supabase
     .from('bookmark')
     .select('*', { count: 'exact' })
@@ -171,8 +274,9 @@ export async function getBookmarksCount(
 export async function getPhotosCount(
   email: string,
 ): Promise<{ count: number }> {
+  noStore(); // always read live — counts must not be served stale from cache
   const { count, error } = await supabase
-    .from('parklist')
+    .from('placelist')
     .select('*', { count: 'exact' })
     .eq('email', email);
 
@@ -184,13 +288,13 @@ export async function getPhotosCount(
   return { count };
 }
 
-// average park rating per user
+// average place rating per user
 export async function getRating(
   email: string,
-): Promise<{ starRating: number }[]> {
+): Promise<{ star_rating: number }[]> {
   const { data, error } = await supabase
-    .from('parklist')
-    .select('starRating')
+    .from('placelist')
+    .select('star_rating')
     .eq('email', email);
 
   if (error) {
@@ -202,8 +306,8 @@ export async function getRating(
 }
 
 // average app rating
-export async function getAppRating(): Promise<{ appRating: number }[]> {
-  const { data, error } = await supabase.from('feedbacks').select('appRating');
+export async function getAppRating(): Promise<{ app_rating: number }[]> {
+  const { data, error } = await supabase.from('feedbacks').select('app_rating');
 
   if (error) {
     console.error('[getAppRating error]', error);
@@ -267,18 +371,18 @@ export async function createUser(
 
 // create feedback
 export async function createFeedback({
-  userId,
-  appRating,
+  email,
+  app_rating,
   review,
 }: {
-  userId: string;
-  appRating: number;
+  email: string;
+  app_rating: number;
   review: string;
 }): Promise<Record<string, any>[]> {
   const { data, error } = await supabase.from('feedbacks').insert({
     created_at: new Date().toISOString(),
-    userId,
-    appRating,
+    email, // FK -> user(email), consistent with placelist/visits
+    app_rating,
     review,
   });
 

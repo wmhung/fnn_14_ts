@@ -6,11 +6,16 @@ export const metadata = {
 
 export default async function Page() {
   return (
-    <div className='flex'>
-      <div className='mx-auto my-auto'>
-        <h1 className='flex mb-3 justify-center text-2xl'>Create a new user</h1>
-        <SignupForm />
+    <div className='w-full max-w-md mx-auto px-4 sm:px-6 py-8 sm:py-12'>
+      <div className='text-center mb-8'>
+        <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
+          Get started
+        </span>
+        <h1 className='mt-1 text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'>
+          Create your account
+        </h1>
       </div>
+      <SignupForm />
     </div>
   );
 }

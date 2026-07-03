@@ -2,29 +2,27 @@
 
 import { useMemo } from 'react';
 import {
-  useParkData,
+  usePlaceData,
   Bookmark as BookmarkType,
-} from '../_lib/contexts/ParkDataContext';
+} from '../_lib/contexts/PlaceDataContext';
 import BookmarkItem from './BookmarkItem';
 
 export default function BookmarkList() {
-  const { bookmarks, sort } = useParkData();
+  const { bookmarks, sort } = usePlaceData();
 
-  // Ensure bookmarks is an array of BookmarkType
   const sortedBookmarks: BookmarkType[] = useMemo(() => {
     if (!bookmarks?.length) return [];
 
-    // Map and normalize each bookmark
-    const mapped: BookmarkType[] = bookmarks.map((bookmark, idx: number) => ({
-      id: bookmark.id ?? idx, // fallback if id is missing
-      park_id: bookmark.park_id,
-      park_name: bookmark.park_name ?? `Park ${bookmark.park_id}`,
+    // Normalize each bookmark with safe fallbacks
+    const mapped: BookmarkType[] = bookmarks.map((bookmark, idx) => ({
+      id: bookmark.id ?? idx,
+      place_id: bookmark.place_id,
+      place_name: bookmark.place_name ?? `Place ${bookmark.place_id}`,
       date: bookmark.date,
       position: bookmark.position,
       star_rating: bookmark.star_rating ?? 0,
     }));
 
-    // ✅ Client-side sorting fallback (server may already sort)
     return mapped.sort((a, b) => {
       switch (sort) {
         case 'date-desc':
@@ -32,9 +30,9 @@ export default function BookmarkList() {
         case 'date-asc':
           return new Date(a.date).getTime() - new Date(b.date).getTime();
         case 'rating-desc':
-          return (b.starRating ?? 0) - (a.starRating ?? 0);
+          return (b.star_rating ?? 0) - (a.star_rating ?? 0);
         case 'rating-asc':
-          return (a.starRating ?? 0) - (b.starRating ?? 0);
+          return (a.star_rating ?? 0) - (b.star_rating ?? 0);
         default:
           return 0;
       }
@@ -43,7 +41,7 @@ export default function BookmarkList() {
 
   if (!sortedBookmarks.length) {
     return (
-      <div className='flex items-center justify-center w-full max-h-[60%] mx-1 my-2 border shadow-sm rounded-lg text-slate-500 text-center inset-shadow text-xl'>
+      <div className='flex items-center justify-center w-full xs:max-h-[42vh] max-h-[63vh] mx-1 my-2 border shadow-sm rounded-lg text-slate-500 text-center inset-shadow text-xl'>
         <p>There is no data in your bookmark list, yet!</p>
       </div>
     );
@@ -51,10 +49,12 @@ export default function BookmarkList() {
 
   return (
     <div className='flex justify-center'>
-      <div className='flex justify-center w-full max-h-[60%] mx-1 my-2 border shadow-sm rounded-lg overflow-y-scroll overflow-x-hidden gap-[3px] list-none'>
-        <ul>
+      <div className='w-full xs:max-h-[42vh] max-h-[63vh] mx-1 my-2 border shadow-sm rounded-lg overflow-y-scroll overflow-x-hidden'>
+        <ul className='list-none'>
           {sortedBookmarks.map((bookmark) => (
-            <BookmarkItem bookmark={bookmark} key={bookmark.parkId} />
+            <li key={bookmark.id}>
+              <BookmarkItem bookmark={bookmark} />
+            </li>
           ))}
         </ul>
       </div>

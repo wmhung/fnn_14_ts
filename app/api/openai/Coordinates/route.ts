@@ -39,21 +39,21 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step 1: Ask GPT for the park title only
+    // Step 1: Ask GPT for the place title only
     const gpt4Completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
           role: 'system',
           content: `
-You are a helpful assistant that recommends the best park for the user's request.
+You are a helpful assistant that recommends the best place for the user's request.
 
 🌐 Instructions:
 - Understand if the user is using English or Chinese.
 - Reply in the same language.
-- Recommend one specific park name as JSON: {"title": "Park Name"}
+- Recommend one specific place name as JSON: {"title": "Place Name"}
 
-Do not include coordinates. Just return the park name as a JSON object with key "title".
+Do not include coordinates. Just return the place name as a JSON object with key "title".
           `.trim(),
         },
         { role: 'user', content: userInput },
@@ -62,31 +62,31 @@ Do not include coordinates. Just return the park name as a JSON object with key 
 
     const gptReply = gpt4Completion.choices[0]?.message?.content?.trim();
 
-    let parkTitle = '';
+    let placeTitle = '';
     if (gptReply?.startsWith('{')) {
       try {
         const parsed = JSON.parse(gptReply);
-        parkTitle = parsed.title;
+        placeTitle = parsed.title;
       } catch (err) {
         return new Response(
           JSON.stringify({ tryAgain: true, reason: 'GPT JSON parse error' }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
         );
       }
     }
 
-    if (!parkTitle) {
+    if (!placeTitle) {
       return new Response(
-        JSON.stringify({ tryAgain: true, reason: 'Missing park title' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ tryAgain: true, reason: 'Missing place title' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
     // Step 2: Use Google Maps Geocoding API
     const geoRes = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-        parkTitle
-      )}&key=${GOOGLE_API_KEY}`
+        placeTitle,
+      )}&key=${GOOGLE_API_KEY}`,
     );
 
     const geoData: GeoResponse = await geoRes.json();
@@ -97,18 +97,18 @@ Do not include coordinates. Just return the park name as a JSON object with key 
         JSON.stringify({
           tryAgain: true,
           reason: 'Could not geocode title',
-          title: parkTitle,
+          title: placeTitle,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
     return new Response(
       JSON.stringify({
-        title: parkTitle,
+        title: placeTitle,
         coordinates: [location.lat, location.lng],
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (error) {
     console.error('Server Error:', error);

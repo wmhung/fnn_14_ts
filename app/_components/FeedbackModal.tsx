@@ -14,7 +14,8 @@ function FeedbackModal({ onClose, onSubmit }) {
 
     setIsSubmitting(true);
 
-    await onSubmit({ rating, review });
+    // Form's handleFeedbackSubmit expects `app_rating`, not `rating`. [FIX]
+    await onSubmit({ app_rating: rating, review });
 
     setIsSubmitting(false);
     onClose();

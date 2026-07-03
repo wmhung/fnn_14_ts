@@ -1,4 +1,3 @@
-// BookmarkContext.tsx
 'use client';
 
 import {
@@ -9,84 +8,72 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
+import { useSession } from 'next-auth/react';
 import { supabase } from '@/app/_lib/supabase';
 
 // ---------------- Types ----------------
+
 export interface Bookmark {
-  id?: number;
-  park_id: number;
-  park_name: string;
-  date: string | Date; // ISO string
-  position?: {
-    lat: number;
-    lng: number;
-  };
-  star_rating?: number;
-  [key: string]: any; // optional extra fields like notes, image, city, email
+  id: number;
+  email: string;
+  place_id: number;
+  created_at?: string;
 }
 
 interface BookmarkState {
-  bookmarks: Bookmark[];
-  currentBookmark: Bookmark | null;
+  bookmarkedPlaceIds: Set<number>;
   isLoading: boolean;
   error: string;
 }
 
 type BookmarkAction =
   | { type: 'loading' }
-  | { type: 'bookmarks/loaded'; payload: Bookmark[] }
-  | { type: 'bookmark/loaded'; payload: Bookmark }
-  | { type: 'bookmark/created'; payload: Bookmark }
-  | { type: 'bookmark/deleted'; payload: number }
+  | { type: 'ids/loaded'; payload: number[] }
+  | { type: 'toggle/local'; payload: { placeId: number; on: boolean } }
+  | { type: 'place/removed'; payload: number }
   | { type: 'rejected'; payload: string };
 
 interface BookmarkContextType extends BookmarkState {
-  getBookmark: (park_id: number) => Promise<void>;
-  createBookmark: (bookmark: Omit<Bookmark, 'id'>) => Promise<void>;
-  deleteBookmark: (id: number) => Promise<void>;
-  updateBookmark: (bookmark: Omit<Bookmark, 'id'>) => Promise<void>;
+  toggleBookmark: (placeId: number, email: string) => Promise<void>;
+  removeBookmarksForPlace: (placeId: number) => void;
+  fetchBookmarkIds: (email: string) => Promise<void>;
 }
 
 // ---------------- Initial State ----------------
+
 const initialState: BookmarkState = {
-  bookmarks: [],
-  currentBookmark: null,
+  bookmarkedPlaceIds: new Set<number>(),
   isLoading: false,
   error: '',
 };
 
 // ---------------- Reducer ----------------
+
 function reducer(state: BookmarkState, action: BookmarkAction): BookmarkState {
   switch (action.type) {
     case 'loading':
       return { ...state, isLoading: true };
 
-    case 'bookmarks/loaded':
-      return { ...state, isLoading: false, bookmarks: action.payload };
-
-    case 'bookmark/loaded':
-      return { ...state, isLoading: false, currentBookmark: action.payload };
-
-    case 'bookmark/created':
+    case 'ids/loaded':
       return {
         ...state,
         isLoading: false,
-        bookmarks: [...state.bookmarks, action.payload],
-        currentBookmark: action.payload,
+        bookmarkedPlaceIds: new Set(action.payload),
       };
 
-    case 'bookmark/deleted':
-      return {
-        ...state,
-        isLoading: false,
-        bookmarks: state.bookmarks.filter(
-          (bookmark) => bookmark.id !== action.payload,
-        ),
-        currentBookmark:
-          state.currentBookmark?.id === action.payload
-            ? null
-            : state.currentBookmark,
-      };
+    case 'toggle/local': {
+      const next = new Set(state.bookmarkedPlaceIds);
+      if (action.payload.on) next.add(action.payload.placeId);
+      else next.delete(action.payload.placeId);
+      return { ...state, bookmarkedPlaceIds: next };
+    }
+
+    case 'place/removed': {
+      if (!state.bookmarkedPlaceIds.has(action.payload)) return state;
+      const next = new Set(state.bookmarkedPlaceIds);
+      next.delete(action.payload);
+      return { ...state, bookmarkedPlaceIds: next };
+    }
 
     case 'rejected':
       return { ...state, isLoading: false, error: action.payload };
@@ -97,141 +84,85 @@ function reducer(state: BookmarkState, action: BookmarkAction): BookmarkState {
 }
 
 // ---------------- Context ----------------
+
 const BookmarkContext = createContext<BookmarkContextType | undefined>(
   undefined,
 );
 
 // ---------------- Provider ----------------
-function BookmarkProvider({ children }: { children: ReactNode }) {
-  const [{ bookmarks, currentBookmark, isLoading, error }, dispatch] =
-    useReducer(reducer, initialState);
 
-  // Fetch all bookmarks
-  const fetchBookmarks = useCallback(async () => {
+function BookmarkProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const { data: session } = useSession();
+  const email = session?.user?.email ?? null;
+
+  // -------- Reads --------
+
+  const fetchBookmarkIds = useCallback(async (sessionEmail: string) => {
     dispatch({ type: 'loading' });
 
     const { data, error } = await supabase
       .from('bookmark')
-      .select('*')
-      .order('id');
+      .select('place_id')
+      .eq('email', sessionEmail);
 
     if (error) {
       dispatch({ type: 'rejected', payload: error.message });
-    } else {
-      dispatch({ type: 'bookmarks/loaded', payload: data as Bookmark[] });
+      return;
     }
+
+    dispatch({
+      type: 'ids/loaded',
+      payload: (data ?? []).map((r) => r.place_id as number),
+    });
   }, []);
 
-  // Fetch a single bookmark by park_id
-  const getBookmark = useCallback(
-    async (park_id: number) => {
-      if (currentBookmark?.park_id === park_id) return;
-
-      dispatch({ type: 'loading' });
-
-      const { data, error } = await supabase
-        .from('bookmark')
-        .select('*')
-        .eq('park_id', park_id)
-        .single();
-
-      if (error) {
-        dispatch({ type: 'rejected', payload: error.message });
-      } else {
-        dispatch({ type: 'bookmark/loaded', payload: data as Bookmark });
-      }
-    },
-    [currentBookmark],
-  );
-
-  // Create a bookmark
-  async function createBookmark(newBookmark: Omit<Bookmark, 'id'>) {
-    dispatch({ type: 'loading' });
-
-    const { data, error } = await supabase
-      .from('bookmark')
-      .insert([newBookmark])
-      .select();
-
-    if (error) {
-      dispatch({ type: 'rejected', payload: error.message });
-      return;
-    }
-
-    dispatch({ type: 'bookmark/created', payload: data?.[0] as Bookmark });
-  }
-
-  // Delete a bookmark
-  async function deleteBookmark(id: number) {
-    if (!id) {
-      dispatch({ type: 'rejected', payload: 'Invalid bookmark ID' });
-      return;
-    }
-
-    dispatch({ type: 'loading' });
-
-    const { error } = await supabase.from('bookmark').delete().eq('id', id);
-
-    if (error) {
-      dispatch({ type: 'rejected', payload: error.message });
-      return;
-    }
-
-    dispatch({ type: 'bookmark/deleted', payload: id });
-    fetchBookmarks();
-  }
-
-  // Toggle bookmark (add/remove)
-  async function updateBookmark(newBookmark: Omit<Bookmark, 'id'>) {
-    try {
-      const { data: existingBookmark, error: fetchError } = await supabase
-        .from('bookmark')
-        .select('*')
-        .eq('park_id', newBookmark.park_id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-
-      if (existingBookmark) {
-        const { error: deleteError } = await supabase
-          .from('bookmark')
-          .delete()
-          .eq('id', existingBookmark.id);
-
-        if (deleteError) throw deleteError;
-
-        dispatch({ type: 'bookmark/deleted', payload: existingBookmark.id });
-      } else {
-        const { data, error: insertError } = await supabase
-          .from('bookmark')
-          .insert([newBookmark])
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        dispatch({ type: 'bookmark/created', payload: data as Bookmark });
-      }
-    } catch (error: any) {
-      dispatch({ type: 'rejected', payload: error.message });
-    }
-  }
-
+  // Auto-load whenever the signed-in user changes.
   useEffect(() => {
-    fetchBookmarks();
-  }, [fetchBookmarks]);
+    if (email) fetchBookmarkIds(email);
+  }, [email, fetchBookmarkIds]);
+
+  // -------- Writes --------
+
+  async function toggleBookmark(placeId: number, sessionEmail: string) {
+    if (!sessionEmail) {
+      dispatch({ type: 'rejected', payload: 'Not signed in' });
+      return;
+    }
+
+    // Predict the outcome from local truth.
+    const willBeOn = !state.bookmarkedPlaceIds.has(placeId);
+
+    // Optimistic flip — UI updates instantly.
+    dispatch({ type: 'toggle/local', payload: { placeId, on: willBeOn } });
+
+    const { error } = await supabase.rpc('toggle_bookmark', {
+      p_place_id: placeId,
+      p_email: sessionEmail,
+    });
+
+    if (error) {
+      console.error('[toggle_bookmark]', error);
+      // Roll back the optimistic flip.
+      dispatch({ type: 'toggle/local', payload: { placeId, on: !willBeOn } });
+      dispatch({ type: 'rejected', payload: error.message });
+    }
+  }
+
+  const removeBookmarksForPlace = useCallback((placeId: number) => {
+    dispatch({ type: 'place/removed', payload: placeId });
+  }, []);
 
   return (
     <BookmarkContext.Provider
       value={{
-        bookmarks,
-        currentBookmark,
-        isLoading,
-        error,
-        getBookmark,
-        createBookmark,
-        deleteBookmark,
-        updateBookmark,
+        bookmarkedPlaceIds: state.bookmarkedPlaceIds,
+        isLoading: state.isLoading,
+        error: state.error,
+        toggleBookmark,
+        removeBookmarksForPlace,
+        fetchBookmarkIds,
       }}
     >
       {children}
@@ -240,10 +171,12 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
 }
 
 // ---------------- Hook ----------------
+
 function useBookmarks() {
   const context = useContext(BookmarkContext);
-  if (!context)
+  if (!context) {
     throw new Error('useBookmarks must be used inside BookmarkProvider');
+  }
   return context;
 }
 

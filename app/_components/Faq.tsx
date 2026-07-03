@@ -1,78 +1,111 @@
 'use client';
 
 import { useState } from 'react';
-import { RxCross2 } from 'react-icons/rx';
-import { IoAdd } from 'react-icons/io5';
+import { FaChevronDown } from 'react-icons/fa';
 
 const faqs = [
   {
-    question: 'What is this website about?',
+    question: 'What is Finding Next Neverland?',
     answer:
-      'This website helps users discover parks and bookmark their favorites.',
+      'Finding Next Neverland (FNN) is a personal place-tracker for parents. Save the parks, playgrounds, museums, and schools you visit with your kids, add photos and notes, and build a private map of memorable family outings.',
   },
   {
-    question: 'How can I sign up?',
+    question: 'What kinds of places can I save?',
     answer:
-      'Click the "Login / Sign up" button in the top-right and choose your preferred method.',
+      'Four categories so far: parks, playgrounds, museums, and schools. When you add a place, you pick its type so you can later filter or color-code the map.',
   },
   {
-    question: 'Can I use my Google account?',
+    question: 'How do I save a new place?',
     answer:
-      'Yes! We support Google and GitHub logins, along with custom credentials.',
+      'Sign in, open your Places list from the menu, and click "Add a place". Fill in the name, type, location, photo, and any notes — then save. The new spot appears on your map and in your list right away.',
   },
   {
-    question: 'How can I sign up?',
+    question: 'How do bookmarks work?',
     answer:
-      'Click the "Login / Sign up" button in the top-right and choose your preferred method.',
+      'Tap the heart on any place to bookmark it. Bookmarks live in their own tab, so the spots you love most are always one tap away.',
   },
   {
-    question: 'Can I use my Google account?',
+    question: 'Can I see all my places on a map?',
     answer:
-      'Yes! We support Google and GitHub logins, along with custom credentials.',
+      "Yes. The map view shows every place you've saved as a marker. Tap a marker to see its photo and notes, or tap a row in the list to focus the map on that location.",
+  },
+  {
+    question: 'How do I sign up?',
+    answer:
+      'Click "Login / Sign up" in the top-right and choose Google, GitHub, or email + password. Whichever you pick, your places are linked to that account.',
+  },
+  {
+    question: 'Is my data private?',
+    answer:
+      "Yes. Only you see your places and bookmarks — they're scoped to your account using Supabase row-level security. We never share or sell user data.",
+  },
+  {
+    question: 'Can I edit or delete a place after saving?',
+    answer:
+      'Open any place from your list, then tap Edit to update its details or Delete to remove it. Deletes are permanent, so the app asks you to confirm first.',
+  },
+  {
+    question: 'Does this work on my phone?',
+    answer:
+      'Yes — the layout adapts to phones, tablets, and laptops. On mobile you can swipe between the list and the map for a one-handed view.',
+  },
+  {
+    question: "Something's broken — where do I get help?",
+    answer:
+      'Email brucewmhung@gmail.com with a short description of what you were trying to do and what went wrong. A screenshot helps a lot. I usually reply within a day or two.',
   },
 ];
 
-export default function FAQPage() {
-  const [openIndex, setOpenIndex] = useState(null);
+export default function Faq() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const toggleFAQ = (index) => {
+  const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
-    <div className='max-w-2xl mx-auto px-4 py-12'>
-      <h1 className='text-4xl text-slate-700 font-bold mb-8 text-center sticky top-0 z-10 py-4 dark:text-slate-200'>
-        Frequently Asked Questions
-      </h1>
-      <div className='space-y-4'>
-        {faqs.map((faq, index) => (
-          <div
-            key={index}
-            className='border border-slate-300 rounded-sm shadow-md p-4 transition-all duration-300'
-          >
+    <div className='rounded-2xl bg-white dark:bg-slate-900 ring-1 ring-gray-200 dark:ring-slate-700 shadow-sm overflow-hidden divide-y divide-gray-100 dark:divide-slate-700'>
+      {faqs.map((faq, index) => {
+        const isOpen = openIndex === index;
+        return (
+          <div key={index}>
             <button
-              className='w-full text-left flex justify-between items-center'
+              type='button'
               onClick={() => toggleFAQ(index)}
+              aria-expanded={isOpen}
+              aria-controls={`faq-panel-${index}`}
+              id={`faq-trigger-${index}`}
+              className='w-full text-left flex justify-between items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/50 focus-visible:ring-inset transition'
             >
-              <span className='text-lg text-slate-700 font-bold dark:text-slate-200'>
+              <span className='text-base font-medium text-gray-900 dark:text-slate-100'>
                 {faq.question}
               </span>
-              <span className='text-2xl'>
-                {openIndex === index ? <RxCross2 /> : <IoAdd />}
-              </span>
+              <FaChevronDown
+                aria-hidden='true'
+                className={`shrink-0 w-4 h-4 text-gray-400 dark:text-slate-400 transition-transform duration-200 ease-out ${
+                  isOpen ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
             </button>
+
+            {/* Smooth height transition via grid-template-rows (no max-h cap). */}
             <div
-              className={`mt-2 text-slate-500 transition-all duration-300 dark:text-slate-400 ${
-                openIndex === index
-                  ? 'max-h-40 opacity-100'
-                  : 'max-h-0 opacity-0 overflow-hidden'
+              id={`faq-panel-${index}`}
+              role='region'
+              aria-labelledby={`faq-trigger-${index}`}
+              className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
               }`}
             >
-              {faq.answer}
+              <div className='overflow-hidden'>
+                <p className='px-5 pb-5 text-sm text-gray-600 dark:text-slate-300 leading-relaxed'>
+                  {faq.answer}
+                </p>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

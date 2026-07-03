@@ -1,6 +1,7 @@
 'use client';
 import { GiParkBench } from 'react-icons/gi';
 import { BsBookmarkCheck } from 'react-icons/bs';
+import { FaRoute } from 'react-icons/fa';
 import { RxCross2 } from 'react-icons/rx';
 import { useMobilePanel } from '../_lib/contexts/MobilePanelContext';
 
@@ -14,7 +15,7 @@ function MobilePanelToggle() {
         onClick={() => setView('list')}
       >
         <GiParkBench className='mx-auto my-2 w-7 h-7' />
-        <p className='mx-auto my-1 text-xs font-extrabold'>Park List</p>
+        <p className='mx-auto my-1 text-xs font-extrabold'>Place List</p>
       </button>
       <button
         className='w-20 mx-auto text-slate-700 dark:text-slate-50 font-bold'
@@ -29,6 +30,13 @@ function MobilePanelToggle() {
       >
         <BsBookmarkCheck className='mx-auto my-2 w-7 h-7' />
         <p className='mx-auto my-1 text-xs font-extrabold'>Bookmarks</p>
+      </button>
+      <button
+        className='w-20 mx-auto text-slate-700 dark:text-slate-50 font-bold'
+        onClick={() => setView('distance')}
+      >
+        <FaRoute className='mx-auto my-2 w-7 h-7' />
+        <p className='mx-auto my-1 text-xs font-extrabold'>Distance</p>
       </button>
     </div>
   );

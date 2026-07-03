@@ -2,7 +2,7 @@ import { auth } from '../_lib/auth';
 import {
   getBookmarksCount,
   getPhotosCount,
-  getParkLists,
+  getPlaceLists,
   getAppRating,
   getRating,
   getUsersData,
@@ -40,13 +40,13 @@ export default async function Page() {
   const usersData: User[] =
     role === 'owner' || role === 'admin' ? await getUsersData() : [];
 
-  // retrieve park and bookmark count
+  // retrieve place and bookmark count
   let count = 0;
   let count_2 = 0;
   let count_3 = 0;
 
   if (email) {
-    const result = await getParkLists({ email });
+    const result = await getPlaceLists({ email });
     const result_2 = await getBookmarksCount(email);
     const result_3 = await getPhotosCount(email);
     count = result.count || 0;
@@ -70,7 +70,7 @@ export default async function Page() {
     ratings.length > 0
       ? average(
           ratings.map((rating) =>
-            role === 'owner' ? rating.appRating : rating.starRating,
+            role === 'owner' ? rating.app_rating : rating.star_rating,
           ),
         )
       : 0;
@@ -80,42 +80,49 @@ export default async function Page() {
 
   return (
     <div className='mx-auto pb-4'>
-      {session?.user.email ? (
+      {session?.user?.email ? (
         <div className='mx-auto'>
           <h1 className='flex justify-start items-center my-8 px-2 text-xl'>
             Hi, {name || userName}.{' '}
             {role === 'owner' ? 'All users have...' : 'You have...'}
           </h1>
 
-          <div className='grid grid-cols-2 gap-4 xs:grid-cols-4 xs:gap-2 2xs:gap-1 px-2 max-w-[60rem] mx-auto text-base'>
-            <div className='flex flex-col justify-center items-center py-2 rounded-lg shadow-lg bg-[linear-gradient(to_left_top,_#e8e0ec,_#ddbdef,_#cf9af1,_#bf76f3,_#ab4ef4)] px-1'>
-              <PiParkDuotone className='mx-2 w-10 h-10' />
-              <span className='items-center text-center'>
-                visited <br />
-                {count} park{plural}
-              </span>
+          <div className='grid grid-cols-2 gap-4 xs:grid-cols-4 xs:gap-3 2xs:gap-2 px-2 max-w-[60rem] mx-auto'>
+            <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-emerald-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-emerald-500'>
+              <PiParkDuotone className='w-9 h-8 text-emerald-500 dark:text-emerald-400 mb-2' />
+              <p className='text-3xl font-bold text-gray-900 leading-none dark:text-slate-100'>
+                {count}
+              </p>
+              <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
+                place{plural} visited
+              </p>
             </div>
-            <div className='flex flex-col justify-center items-center py-2 rounded-lg shadow-lg bg-[linear-gradient(to_right_top,_#e8e0ec,_#ddbdef,_#cf9af1,_#bf76f3,_#ab4ef4)] px-1'>
-              <BsBookmarkStarFill className='mx-2 my-1 w-7 h-7' />
-              <span className='items-center text-center'>
-                saved <br />
-                {count_2} bookmark{plural}
-              </span>
+            <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-amber-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-amber-500'>
+              <BsBookmarkStarFill className='w-8 h-8 text-amber-500 dark:text-amber-400 mb-2' />
+              <p className='text-3xl font-bold text-gray-900 leading-none dark:text-slate-100'>
+                {count_2}
+              </p>
+              <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
+                bookmark{plural} saved
+              </p>
             </div>
-            <div className='flex flex-col justify-center items-center py-2 rounded-lg shadow-lg bg-[linear-gradient(to_left_bottom,_#e8e0ec,_#ddbdef,_#cf9af1,_#bf76f3,_#ab4ef4)] px-1'>
-              <FaRegImages className='mx-2 my-1 w-8 h-8' />
-              <span className='items-center text-center'>
-                uploaded <br />
-                {count_3} photo{plural}
-              </span>
+            <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-sky-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-sky-500'>
+              <FaRegImages className='w-8 h-8 text-sky-500 dark:text-sky-400 mb-2' />
+              <p className='text-3xl font-bold text-gray-900 leading-none dark:text-slate-100'>
+                {count_3}
+              </p>
+              <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
+                photo{plural} uploaded
+              </p>
             </div>
-            <div className='flex flex-col justify-center items-center py-2 rounded-lg shadow-lg bg-[linear-gradient(to_right_bottom,_#e8e0ec,_#ddbdef,_#cf9af1,_#bf76f3,_#ab4ef4)] px-1'>
-              <FaStar className='mx-2 my-1 w-8 h-8' />
-              <span className='items-center text-center'>
-                {role === 'owner' ? 'reviewed the app' : 'rated places'}
-                <br />
-                avg: {avgRatingRounded}
-              </span>
+            <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-rose-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-rose-500'>
+              <FaStar className='w-8 h-8 text-rose-500 dark:text-rose-400 mb-2' />
+              <p className='text-3xl font-bold text-gray-900 leading-none dark:text-slate-100'>
+                {avgRatingRounded}
+              </p>
+              <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
+                {role === 'owner' ? 'avg app rating' : 'avg place rating'}
+              </p>
             </div>
           </div>
 

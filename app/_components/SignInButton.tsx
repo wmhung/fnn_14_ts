@@ -3,20 +3,20 @@ import { signInAction } from '../_lib/actions';
 
 function SignInButton() {
   return (
-    <>
-      <form className='flex flex-col' action={signInAction}>
-        <button className='flex items-center justify-center text-base aspect-[6/1] bg-slate-100 py-1 px-3 w-60 mt-5 rounded-sm shadow-md dark:border dark:border-slate-100 dark:bg-slate-800 hover:bg-accent-300 hover:text-slate-50 dark:hover:bg-accent-300 dark:hover:border-accent-300'>
-          <Image
-            src='https://authjs.dev/img/providers/google.svg'
-            alt='Google logo'
-            height='24'
-            width='24'
-            className='mr-3'
-          />
-          <span>Continue with Google</span>
-        </button>
-      </form>
-    </>
+    <form action={signInAction}>
+      <button
+        type='submit'
+        className='w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 dark:hover:border-slate-500 transition'
+      >
+        <Image
+          src='https://authjs.dev/img/providers/google.svg'
+          alt='Google logo'
+          height='20'
+          width='20'
+        />
+        <span>Continue with Google</span>
+      </button>
+    </form>
   );
 }
 

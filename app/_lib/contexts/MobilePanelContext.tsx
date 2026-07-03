@@ -2,13 +2,15 @@
 
 import { createContext, useContext, useState } from 'react';
 
+type MobilePanelView = 'list' | 'bookmarks' | 'distance' | null;
+
 type MobilePanelContextType = {
-  view: 'list' | 'bookmarks' | null;
-  setView: React.Dispatch<React.SetStateAction<'list' | 'bookmarks' | null>>;
+  view: MobilePanelView;
+  setView: React.Dispatch<React.SetStateAction<MobilePanelView>>;
 };
 
 const MobilePanelContext = createContext<MobilePanelContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function MobilePanelProvider({
@@ -16,7 +18,7 @@ export function MobilePanelProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [view, setView] = useState(null); // 'list' | 'bookmarks' | null
+  const [view, setView] = useState<MobilePanelView>(null);
 
   return (
     <MobilePanelContext.Provider value={{ view, setView }}>

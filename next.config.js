@@ -29,9 +29,16 @@ const nextConfig = {
     ],
   },
 
-  // ✅ Disable ESLint errors during production builds (Vercel)
+  // Disable ESLint errors during production builds (Vercel)
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  // Quick fix: alias legacy /bookmark paths to /placelist
+  async redirects() {
+    return [
+      { source: '/bookmark', destination: '/placelist', permanent: false },
+      { source: '/bookmarks', destination: '/placelist', permanent: false },
+    ];
   },
 };
 

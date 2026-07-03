@@ -14,21 +14,21 @@ function AppNavClient() {
         <ul className='hidden md:flex justify-center h-10'>
           <li className='flex' dir='ltr'>
             <Link
-              href='/parklist'
+              href='/placelist'
               className={`flex items-center justify-center no-underline uppercase px-2 rounded-s-lg transition-all duration-300 border border-slate-300 ${
-                pathname === '/parklist'
+                pathname === '/placelist'
                   ? ' border-none bg-accent-600 text-slate-50 shadow-lg' // Active state
                   : ' hover:bg-accent-600 hover:text-slate-50'
               }`}
             >
-              Park List
+              Place List
             </Link>
           </li>
           <li className='flex' dir='rtl'>
             <Link
-              href='/parklist/bookmarks'
+              href='/placelist/bookmarks'
               className={`flex items-center no-underline uppercase px-2 mr-2 rounded-s-lg transition-all duration-300 border border-slate-300 ${
-                pathname === '/parklist/bookmarks'
+                pathname === '/placelist/bookmarks'
                   ? ' border-none bg-accent-600 text-slate-50 shadow-lg ' // Active state
                   : '  hover:bg-accent-600 hover:text-slate-50'
               }`}

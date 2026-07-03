@@ -3,6 +3,7 @@
 import { auth, signIn, signOut } from './auth';
 import { revalidatePath } from 'next/cache';
 import { supabase, supabaseUrl } from './supabase';
+import { supabaseAdmin } from './supabase-admin';
 import { redirect } from 'next/navigation';
 import { hash } from 'bcryptjs';
 import path from 'path';
@@ -13,6 +14,14 @@ import {
   UserNotFoundError,
   InvalidPasswordError,
 } from './errors';
+
+import crypto from 'crypto';
+import { sendResetEmail } from './email';
+import {
+  registerSchema,
+  updatePasswordSchema,
+  resetPasswordSchema,
+} from './userSchema';
 
 // google authentication
 export async function signInAction() {
@@ -32,18 +41,18 @@ export async function updatePassword(formData: FormData) {
   const session = await auth();
   if (!session) throw new Error('You must be logged in');
 
-  const password = formData.get('password');
-  const confirmPassword = formData.get('confirmPassword');
+  const parsed = updatePasswordSchema.safeParse({
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirmPassword'),
+  });
 
-  if (!password || !confirmPassword) {
-    throw new Error('Please fill all fields');
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0].message);
   }
 
-  if (password !== confirmPassword) {
-    throw new Error('Passwords do not match');
-  }
+  const { password } = parsed.data;
 
-  const hashedPassword = await hash(password as string, 12);
+  const hashedPassword = await hash(password, 12);
 
   const { error } = await supabase
     .from('user')
@@ -56,40 +65,56 @@ export async function updatePassword(formData: FormData) {
   redirect('/login');
 }
 
-// update user profile
+// Whitelisted values — anything else is rejected as a 400.
+const ALLOWED_NUM_OF_KIDS = new Set(['', '1', '2', '3', 'over3']);
+const ALLOWED_GENDER = new Set(['', 'male', 'female', 'both']);
+
 export async function updateUser(prevState: any, formData: FormData) {
   const session = await auth();
-  if (!session) throw new Error('You must be logged in');
+  if (!session?.user?.email) {
+    return { error: 'You must be logged in' }; // [FIX] return, not throw
+  }
 
-  const role = formData.get('role');
-  const numOfKids = formData.get('num_of_kids');
-  const gender = formData.get('gender');
+  // OAuth users' avatar is owned by the provider (Google/GitHub) and is
+  // read-only in this app — never let an avatar change through for them.
+  const isOAuth =
+    session.user.provider === 'google' || session.user.provider === 'github';
+
+  // ────────── Whitelist + validate ──────────
+
+  const numOfKids = String(formData.get('num_of_kids') ?? '');
+  const gender = String(formData.get('gender') ?? '');
   const avatarFile = formData.get('avatar') as File | null;
 
+  if (!ALLOWED_NUM_OF_KIDS.has(numOfKids)) {
+    return { error: 'Invalid num_of_kids value' };
+  }
+  if (!ALLOWED_GENDER.has(gender)) {
+    return { error: 'Invalid gender value' };
+  }
+
+  // Build the update payload EXPLICITLY — no spread, no ambient fields. [FIX]
   const updateData: Record<string, any> = {
-    role,
-    num_of_kids: numOfKids,
-    gender,
+    num_of_kids: numOfKids || null,
+    gender: gender || null,
   };
 
-  if (avatarFile && avatarFile.size > 0) {
-    const avatarName = `${Math.floor(Math.random() * 1000 + 1)}-${
-      avatarFile.name
-    }`.replaceAll('/', '');
-
-    const avatarPath = `${supabaseUrl}/storage/v1/object/public/avatar/${avatarName}`;
-
-    const { error: storageError } = await supabase.storage
-      .from('avatar')
-      .upload(avatarName, avatarFile, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-
-    if (storageError) {
-      return { error: 'Avatar upload failed' };
+  if (!isOAuth && avatarFile && avatarFile.size > 0) {
+    // Light file-type guard while we're here — matches the form's accept= attr.
+    if (!['image/png', 'image/jpeg'].includes(avatarFile.type)) {
+      return { error: 'Avatar must be PNG or JPEG' };
     }
 
+    const avatarName =
+      `${Math.floor(Math.random() * 1000 + 1)}-${avatarFile.name}`.replaceAll(
+        '/',
+        '',
+      );
+    const avatarPath = `${supabaseUrl}/storage/v1/object/public/avatar/${avatarName}`;
+    const { error: storageError } = await supabase.storage
+      .from('avatar')
+      .upload(avatarName, avatarFile, { cacheControl: '3600', upsert: true });
+    if (storageError) return { error: 'Avatar upload failed' };
     updateData.avatar = avatarPath;
   }
 
@@ -104,7 +129,6 @@ export async function updateUser(prevState: any, formData: FormData) {
   }
 
   revalidatePath('/dashboard/profile');
-
   return { success: true };
 }
 
@@ -143,24 +167,27 @@ export async function login(
   }
 }
 
-// ✅ Register
+//  Register
 export async function register(
   formData: FormData,
 ): Promise<{ error?: string }> {
   try {
-    const fullName = formData.get('fullName');
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
-    const role = formData.get('role') || 'user';
+    console.log('[register] START', formData.get('email'));
 
-    if (!fullName || !email || !password || !confirmPassword) {
-      return { error: 'Please fill all fields' };
+    const parsed = registerSchema.safeParse({
+      full_name: formData.get('full_name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      confirmPassword: formData.get('confirmPassword'),
+    });
+
+    if (!parsed.success) {
+      return { error: parsed.error.issues[0].message };
     }
 
-    if (password !== confirmPassword) {
-      return { error: 'Passwords do not match' };
-    }
+    // typed strings from here on — schema also enforces email format,
+    // password length >= 8, and password === confirmPassword
+    const { full_name: fullName, email, password } = parsed.data;
 
     const { data: existingUser } = await supabase
       .from('user')
@@ -172,35 +199,37 @@ export async function register(
       return { error: 'User already exists' };
     }
 
-    const hashedPassword = await hash(password as string, 12);
+    const hashedPassword = await hash(password, 12);
 
     // read default avatar
     const filePath = path.join(process.cwd(), 'public/default_avatar.png');
     const fileBuffer = await readFile(filePath);
-    const fileName = `${(email as string).replace(/[@.]/g, '_')}_default.png`;
+    const fileName = `${email.replace(/[@.]/g, '_')}_default.png`;
 
-    const { error: uploadError } = await supabase.storage
+    console.log('[register] BEFORE upload', fileName);
+
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('avatar')
       .upload(fileName, fileBuffer, {
         contentType: 'image/png',
         upsert: true,
       });
+    console.log('[register] AFTER upload', uploadError);
 
     if (uploadError) {
       return { error: 'Failed to upload default avatar' };
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from('avatar').getPublicUrl(fileName);
+    // Build the URL explicitly — guarantees /public/ regardless of SDK version
+    // and matches the pattern used by updateUser and the place-upload flow.    [FIX]
+    const avatarPath = `${supabaseUrl}/storage/v1/object/public/avatar/${fileName}`;
 
-    const { error } = await supabase.from('user').insert([
+    const { error } = await supabaseAdmin.from('user').insert([
       {
-        fullName,
+        full_name: fullName,
         email,
         password: hashedPassword,
-        avatar: publicUrl,
-        role,
+        avatar: avatarPath,
       },
     ]);
 
@@ -209,7 +238,6 @@ export async function register(
     }
 
     console.log('User created successfully!');
-    // redirect('/'); // will not return
     return {}; // let client handle redirect
   } catch (err: any) {
     return { error: err.message || 'Something went wrong' };
@@ -218,7 +246,112 @@ export async function register(
 
 // Fetch All Users
 export async function fetchAllUsers() {
-  const { data, error } = await supabase.from('users').select('*');
+  const { data, error } = await supabase.from('user').select('*');
   if (error) throw new Error('Failed to fetch users');
   return data;
+}
+
+// ── 1. Request a reset link ────────────────────────────────────────
+export async function requestPasswordReset(
+  formData: FormData,
+): Promise<{ ok: boolean }> {
+  const email = String(formData.get('email') ?? '')
+    .toLowerCase()
+    .trim();
+  if (!email) return { ok: true }; // never leak
+
+  const { data: user } = await supabaseAdmin
+    .from('user')
+    .select('id, email')
+    .eq('email', email)
+    .single();
+
+  // Only act when the user exists, but ALWAYS return ok
+  // so attackers can't enumerate which emails are registered.
+  if (user) {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
+    const { error: insertErr } = await supabaseAdmin
+      .from('password_reset_token')
+      .insert({
+        user_id: user.id,
+        token_hash: tokenHash,
+        expires_at: new Date(Date.now() + 30 * 60_000).toISOString(),
+      });
+
+    if (insertErr) {
+      console.error('[reset] insert failed:', insertErr);
+      return { ok: true }; // generic response, but error is logged server-side
+    }
+
+    const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password?token=${rawToken}`;
+    await sendResetEmail(user.email, resetUrl);
+  }
+
+  return { ok: true };
+}
+
+// Validate a reset token WITHOUT consuming it (for page load)
+export async function isResetTokenValid(rawToken: string): Promise<boolean> {
+  if (!rawToken) return false;
+
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  const { data: row } = await supabaseAdmin
+    .from('password_reset_token')
+    .select('used_at')
+    .eq('token_hash', tokenHash)
+    .gt('expires_at', new Date().toISOString()) // DB compares in UTC
+    .is('used_at', null)
+    .single();
+
+  return !!row;
+}
+
+// ── 2. Consume the token and set a new password ────────────────────
+export async function resetPassword(
+  formData: FormData,
+): Promise<{ error?: string; success?: boolean }> {
+  const parsed = resetPasswordSchema.safeParse({
+    token: formData.get('token') ?? '',
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirmPassword'),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const { token: rawToken, password } = parsed.data;
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  const { data: row } = await supabaseAdmin // was supabase
+    .from('password_reset_token')
+    .select('id, user_id, expires_at, used_at')
+    .eq('token_hash', tokenHash)
+    .single();
+
+  if (!row || row.used_at || new Date(row.expires_at) < new Date()) {
+    return { error: 'This link is invalid or has expired.' };
+  }
+
+  const hashedPassword = await hash(password, 12);
+
+  const { error: updateErr } = await supabaseAdmin // was supabase
+    .from('user')
+    .update({ password: hashedPassword })
+    .eq('id', row.user_id);
+
+  if (updateErr) return { error: 'Could not update password.' };
+
+  await supabaseAdmin // was supabase
+    .from('password_reset_token')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', row.id);
+
+  return { success: true };
 }

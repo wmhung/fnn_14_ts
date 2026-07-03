@@ -2,10 +2,12 @@
 
 import { useEffect, useState, FormEvent } from 'react';
 import { useUrlPosition } from '@/app/_lib/hooks/useUrlPosition';
-import { useParks } from '../_lib/contexts/ParkContext';
-import { useRouter } from 'next/navigation';
-import { getUserParkCount, createFeedback } from '@/app/_lib/data-service';
-import type { Park } from '../_lib/contexts/ParkContext';
+import { usePlaces } from '../_lib/contexts/PlaceContext';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getUserPlaceCount, createFeedback } from '@/app/_lib/data-service';
+
+// [CHANGED] import canonical types from the single source of truth
+import type { Place, PlaceInput } from '@/types/place';
 
 import DatePicker from 'react-datepicker';
 import Button from './Button';
@@ -16,7 +18,7 @@ import StarRating from './StarRating';
 import FeedbackModal from './FeedbackModal';
 import 'react-datepicker/dist/react-datepicker.css';
 
-export type ParkInput = Omit<Park, 'id' | 'image'> & { image: File | string };
+// [REMOVED] local PlaceInput redeclaration — now imported above
 
 export interface FormUser {
   id?: string;
@@ -24,21 +26,41 @@ export interface FormUser {
   full_name?: string;
 }
 
+type FormMode = 'create' | 'edit';
+
 interface FormProps {
   user: FormUser;
   user_name?: string;
+  mode?: FormMode;
+  initialPlace?: Place;
 }
 
 interface FeedbackData {
-  rating: number;
+  app_rating: number;
   review: string;
 }
 
 const BASE_URL = 'https://api.bigdatacloud.net/data/reverse-geocode-client';
 
-export default function Form({ user, user_name }: FormProps) {
-  const [lat, lng] = useUrlPosition();
-  const { createPark, isLoading } = useParks();
+export default function Form({
+  user,
+  user_name,
+  mode = 'create',
+  initialPlace,
+}: FormProps) {
+  const isEdit = mode === 'edit';
+
+  const [urlLat, urlLng] = useUrlPosition();
+  const lat = isEdit ? (initialPlace?.position?.lat ?? null) : urlLat;
+  const lng = isEdit ? (initialPlace?.position?.lng ?? null) : urlLng;
+
+  // [NEW] Optional place name handed in by a discovered POI
+  // (Overpass "Add this place" → /placelist/form?...&name=). Create mode only.
+  const searchParams = useSearchParams();
+  const urlName = searchParams.get('name');
+  // console.log('[form] received search =', searchParams.toString());
+
+  const { createPlace, updatePlace, isLoading } = usePlaces();
   const router = useRouter();
   const { email, full_name } = user;
 
@@ -48,16 +70,25 @@ export default function Form({ user, user_name }: FormProps) {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const [dist, setDist] = useState('');
-  const [parkName, setParkName] = useState('');
-  const [city, setCity] = useState('');
-  const [date, setDate] = useState<Date>(new Date());
-  const [notes, setNotes] = useState('');
-  const [recreation, setRecreation] = useState('');
+  const [dist, setDist] = useState(initialPlace?.dist ?? '');
+  const [placeName, setPlaceName] = useState(
+    initialPlace?.place_name ?? (isEdit ? '' : (urlName ?? '')),
+  );
+  const [city, setCity] = useState(initialPlace?.city ?? '');
+  const [date, setDate] = useState<Date>(
+    initialPlace?.date ? new Date(initialPlace.date) : new Date(),
+  );
+  const [notes, setNotes] = useState(initialPlace?.notes ?? '');
+  const [recreation, setRecreation] = useState(initialPlace?.recreation ?? '');
   const [image, setImage] = useState<File | null>(null);
-  const [starRating, setStarRating] = useState(0);
+  const [starRating, setStarRating] = useState(initialPlace?.star_rating ?? 0);
   const [geocodingError, setGeocodingError] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (isEdit) return;
+    if (urlName) setPlaceName(urlName);
+  }, [urlName, isEdit]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -66,20 +97,21 @@ export default function Form({ user, user_name }: FormProps) {
   };
 
   useEffect(() => {
-    if (!lat || !lng) return;
+    if (isEdit) return;
+    if (!urlLat || !urlLng) return;
 
     async function fetchCityData() {
       try {
         setIsLoadingGeocoding(true);
-        const res = await fetch(`${BASE_URL}?latitude=${lat}&longitude=${lng}`);
+        const res = await fetch(
+          `${BASE_URL}?latitude=${urlLat}&longitude=${urlLng}`,
+        );
         const data = await res.json();
-
         if (!data.countryCode) {
           throw new Error(
             "That doesn't seem to be a city. Click somewhere else.",
           );
         }
-
         setDist(data.locality || '');
         setCity(data.city);
       } catch (err: any) {
@@ -88,22 +120,29 @@ export default function Form({ user, user_name }: FormProps) {
         setIsLoadingGeocoding(false);
       }
     }
-
     fetchCityData();
-  }, [lat, lng]);
+  }, [urlLat, urlLng, isEdit]);
 
-  async function handleFeedbackSubmit({ rating, review }: FeedbackData) {
+  async function handleFeedbackSubmit({
+    app_rating: appRating,
+    review,
+  }: FeedbackData) {
     try {
+      // Fail loud if email is somehow missing, instead of writing an
+      // orphaned feedback row. (email is the FK -> user(email).)
+      if (!user.email) {
+        throw new Error('Cannot submit feedback: missing user email');
+      }
       await createFeedback({
-        userId: user.id,
-        appRating: rating,
+        email: user.email,
+        app_rating: appRating,
         review,
       });
     } catch (err: any) {
       console.error('Failed to submit feedback:', err.message);
     } finally {
       setShowFeedbackModal(false);
-      router.push('/parklist');
+      router.push('/placelist');
       router.refresh();
     }
   }
@@ -111,68 +150,111 @@ export default function Form({ user, user_name }: FormProps) {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!parkName || !date || !image) {
+    if (!placeName || !date || (!isEdit && !image)) {
       setErrorMsg('Please fill all required fields');
       return;
     }
-
     setErrorMsg('');
 
-    let countBefore = 0;
-    try {
-      countBefore = await getUserParkCount(email);
-    } catch (error: any) {
-      console.error('Error in getUserParkCount:', error.message);
+    if (isEdit && initialPlace) {
+      try {
+        await updatePlace({
+          id: initialPlace.id,
+          dist,
+          city,
+          place_name: placeName,
+          date: date.toISOString(),
+          notes,
+          recreation,
+          star_rating: starRating,
+          email,
+          ...(image ? { image } : {}),
+        });
+        setSuccess(true);
+        setTimeout(() => {
+          router.push('/placelist');
+          router.refresh();
+        }, 1000);
+      } catch (err: any) {
+        console.error('Update place failed:', err.message);
+        setErrorMsg('Failed to update place. Please try again.');
+      }
+      return;
     }
 
-    const newPark: ParkInput = {
+    // Default null (not 0) so a failed/unknown count does NOT get treated as a
+    // first add — only a real count of 0 triggers the feedback modal. [FIX]
+    let countBefore: number | null = null;
+    try {
+      countBefore = await getUserPlaceCount(email);
+    } catch (error: any) {
+      console.error('Error in getUserPlaceCount:', error.message);
+    }
+
+    const newPlace: PlaceInput = {
       dist,
       city,
-      park_name: parkName,
+      place_name: placeName,
       date: date.toISOString(),
       notes,
       recreation,
       position: { lat, lng },
-      image,
+      image: image as File,
       star_rating: starRating,
       email,
       user_name: displayName,
     };
 
     try {
-      await createPark(newPark);
-      setSuccess(true);
+      await createPlace(newPlace);
     } catch (err: any) {
-      console.error('Create park failed:', err.message);
-      setErrorMsg('Failed to add park. Please try again.');
+      console.error('Create place failed:', err.message);
+      setErrorMsg('Failed to add place. Please try again.');
       return;
     }
 
     if (countBefore === 0) {
+      // First-ever add → pop the feedback modal. Keep `success` false so the
+      // main return renders and the modal overlay can mount; the modal's
+      // onClose / onSubmit handle the redirect to /placelist. [FIX]
       setShowFeedbackModal(true);
     } else {
+      // Subsequent adds → show success, then redirect. [FIX]
+      setSuccess(true);
       setTimeout(() => {
-        router.push('/parklist');
+        router.push('/placelist');
         router.refresh();
       }, 1200);
     }
   }
 
   if (isLoadingGeocoding) return <Spinner />;
-  if (!lat && !lng)
+  if (!isEdit && !lat && !lng)
     return <Message message='Start by clicking somewhere on the map' />;
   if (geocodingError) return <Message message={geocodingError} />;
 
   if (success) {
-    return <Message message='✅ Park added successfully!' />;
+    return (
+      <Message
+        message={
+          isEdit
+            ? '✅ Place updated successfully!'
+            : '✅ Place added successfully!'
+        }
+      />
+    );
   }
 
   return (
     <>
       <form
-        className='flex flex-col w-[30rem] h-[83vh] mx-3 px-2 py-3 overflow-y-scroll overflow-x-hidden gap-[2px] list-none border rounded-lg inset-shadow'
+        className='flex flex-col w-[30rem] h-[83vh] mx-3 px-2 py-3 overflow-y-scroll overflow-x-hidden gap-[2px] list-none border rounded-lg inset-shadow dark:bg-slate-800 dark:border-slate-700'
         onSubmit={submit}
       >
+        <h1 className='text-center text-xl font-bold uppercase my-2 '>
+          {isEdit ? 'Edit Place' : 'Add Place'}
+        </h1>
+
         {errorMsg && (
           <p className='text-red-500 text-center font-semibold'>{errorMsg}</p>
         )}
@@ -196,11 +278,11 @@ export default function Form({ user, user_name }: FormProps) {
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Park name</label>
+          <label className='uppercase font-extrabold my-1'>Place name</label>
           <input
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
-            onChange={(e) => setParkName(e.target.value)}
-            value={parkName}
+            onChange={(e) => setPlaceName(e.target.value)}
+            value={placeName}
             required
           />
         </div>
@@ -209,7 +291,7 @@ export default function Form({ user, user_name }: FormProps) {
           <label className='uppercase font-extrabold my-1'>Date</label>
           <DatePicker
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
-            onChange={(date: Date | null) => setDate(date ?? new Date())}
+            onChange={(d: Date | null) => setDate(d ?? new Date())}
             selected={date}
             dateFormat='dd/MM/yyyy'
           />
@@ -217,7 +299,12 @@ export default function Form({ user, user_name }: FormProps) {
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
           <label className='uppercase font-extrabold my-1'>Ratings</label>
-          <StarRating maxRating={5} size={35} onSetRating={setStarRating} />
+          <StarRating
+            maxRating={5}
+            size={35}
+            defaultRating={starRating}
+            onSetRating={setStarRating}
+          />
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
@@ -241,14 +328,27 @@ export default function Form({ user, user_name }: FormProps) {
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Upload photos</label>
+          <label className='uppercase font-extrabold my-1'>
+            {isEdit ? 'Replace photo (optional)' : 'Upload photos'}
+          </label>
+          {isEdit && initialPlace?.image && (
+            <p className='text-xs text-slate-500 mb-1'>
+              Current image will be kept unless you choose a new one.
+            </p>
+          )}
           <input type='file' onChange={handleFileChange} disabled={isLoading} />
-          {isLoading && <p>Uploading...</p>}
+          {isLoading && <p>{isEdit ? 'Updating...' : 'Uploading...'}</p>}
         </div>
 
         <div className='flex justify-between p-6 text-sm text-slate-200'>
           <Button disabled={isLoading}>
-            {isLoading ? 'Creating...' : 'Add'}
+            {isLoading
+              ? isEdit
+                ? 'Saving...'
+                : 'Creating...'
+              : isEdit
+                ? 'Save'
+                : 'Add'}
           </Button>
           <BackButton />
         </div>
@@ -258,7 +358,7 @@ export default function Form({ user, user_name }: FormProps) {
         <FeedbackModal
           onClose={() => {
             setShowFeedbackModal(false);
-            router.push('/parklist');
+            router.push('/placelist');
             router.refresh();
           }}
           onSubmit={handleFeedbackSubmit}
