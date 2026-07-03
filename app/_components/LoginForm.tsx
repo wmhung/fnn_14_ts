@@ -47,8 +47,7 @@ function LoginForm() {
       if (result?.error) {
         setFormError(result.error);
       } else {
-        router.refresh(); // ✅ refresh layout to update session info (e.g., navbar)
-        router.push('/');
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Unexpected login error:', error);

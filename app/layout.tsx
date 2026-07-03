@@ -1,11 +1,12 @@
 import '@/app/_styles/globals.css';
-import { Raleway, Press_Start_2P, Tektur, Exo_2 } from 'next/font/google';
+import { Raleway } from 'next/font/google';
 import { PlaceProvider } from './_lib/contexts/PlaceContext';
 import { BookmarkProvider } from './_lib/contexts/BookmarkContext';
 import { LocationProvider } from './_lib/contexts/LocationContext';
 import { UserRoleProvider } from './_lib/contexts/UserRoleContext';
-import { Providers } from './_lib/providers';
+import Providers from './_lib/providers';
 import Header from './_components/Header';
+import { auth } from './_lib/auth';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -19,7 +20,9 @@ export const metadata = {
   description: 'Explore new places and have fun with your kids.',
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await auth();
+
   return (
     <html lang='en' className='mx-0' suppressHydrationWarning>
       <head>
@@ -45,7 +48,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${raleway.className} font-semibold antialiased bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-slate-50 min-h-screen flex flex-col relative overflow-y-scroll`}
       >
-        <Providers>
+        <Providers session={session}>
           <Header />
           <div className='flex-none 2xs:flex-1 xs:flex-1 mx-0 my-0 grid z-0'>
             <main className='max-w-7xl w-full mx-auto my-auto'>

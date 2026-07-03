@@ -94,8 +94,9 @@ const BookmarkContext = createContext<BookmarkContextType | undefined>(
 function BookmarkProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const email = session?.user?.email ?? null;
+  // console.log(email, status);
 
   // -------- Reads --------
 
@@ -120,8 +121,8 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
 
   // Auto-load whenever the signed-in user changes.
   useEffect(() => {
-    if (email) fetchBookmarkIds(email);
-  }, [email, fetchBookmarkIds]);
+    if (status === 'authenticated' && email) fetchBookmarkIds(email);
+  }, [status, email, fetchBookmarkIds]);
 
   // -------- Writes --------
 
@@ -143,7 +144,7 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) {
-      console.error('[toggle_bookmark]', error);
+      // console.error('[toggle_bookmark]', error);
       // Roll back the optimistic flip.
       dispatch({ type: 'toggle/local', payload: { placeId, on: !willBeOn } });
       dispatch({ type: 'rejected', payload: error.message });

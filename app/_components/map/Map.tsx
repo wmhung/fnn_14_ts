@@ -358,7 +358,13 @@ export default function Map() {
     useEffect(() => {
       const container = map.getContainer();
 
-      const initialFix = setTimeout(() => map.invalidateSize(), 0);
+      // const initialFix = setTimeout(() => map.invalidateSize(), 0);
+      let raf1 = 0,
+        raf2 = 0;
+      const safety = setTimeout(() => map.invalidateSize(), 250); // cold-load net
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => map.invalidateSize()); // after layout+paint
+      });
 
       const ro = new ResizeObserver(() => {
         // 1) Sync Leaflet's cached container dimensions to the new box.
@@ -373,7 +379,10 @@ export default function Map() {
       });
       ro.observe(container);
       return () => {
-        clearTimeout(initialFix);
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+        clearTimeout(safety);
+        // clearTimeout(initialFix);
         ro.disconnect();
       };
     }, [map]);
