@@ -16,15 +16,43 @@ const features = [
 
 export default function Page() {
   return (
-    <div className='w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-16'>
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center'>
-        {/* CONTENT */}
-        <div className='space-y-6'>
+    <div className='w-full'>
+      <section
+        aria-labelledby='about-title'
+        className='relative overflow-hidden min-h-[calc(100svh-5rem)] md:min-h-[80vh] flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16'
+      >
+        {/* Background image (decorative) — same treatment as home page */}
+        <Image
+          src={image1}
+          fill
+          placeholder='blur'
+          quality={80}
+          alt=''
+          aria-hidden='true'
+          className='object-cover object-center opacity-30 dark:opacity-20 -z-20'
+        />
+
+        {/* readability scrim: above image, below the edge-fade + text */}
+        <div
+          aria-hidden='true'
+          className='absolute inset-0 -z-[15] bg-white/60 dark:bg-slate-900/60'
+        />
+
+        {/* fades all four edges into the page background */}
+        <div
+          aria-hidden='true'
+          className='absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_rgb(248_250_252)_85%)] dark:bg-[radial-gradient(ellipse_at_center,_transparent_30%,_rgb(30_41_59)_85%)]'
+        />
+
+        <div className='relative max-w-3xl mx-auto text-center space-y-6'>
           <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
             About
           </span>
 
-          <h1 className='text-3xl sm:text-4xl md:text-5xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'>
+          <h1
+            id='about-title'
+            className='text-3xl sm:text-4xl md:text-5xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'
+          >
             Our story
           </h1>
 
@@ -42,7 +70,7 @@ export default function Page() {
             <h2 className='text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3'>
               Key features
             </h2>
-            <ul className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <ul className='grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto text-left'>
               {features.map((feature) => (
                 <li
                   key={feature}
@@ -65,20 +93,7 @@ export default function Page() {
             </Link>
           </div>
         </div>
-
-        {/* IMAGE */}
-        <div className='order-first lg:order-last'>
-          <div className='relative rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-slate-700 shadow-sm hover:shadow-md transition'>
-            <Image
-              src={image1}
-              placeholder='blur'
-              alt='Family sitting around a fire pit in front of cabin'
-              quality={80}
-              className='w-full h-auto'
-            />
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

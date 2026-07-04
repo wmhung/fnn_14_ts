@@ -62,12 +62,19 @@ export default {
       },
     },
     screens: {
-      '2xs': '320px', // 3 uses — smallest phones
-      xs: '480px', // 8 uses — large phones
-      sm: '640px', // 80 uses — standard
-      md: '768px', // 33 uses — tablet (aligned to Tailwind default)
-      lg: '1024px', // 4 uses — desktop
-      xl: '1280px', // conventional headroom
+      '3xs': '288px',
+      '2xs': '320px',
+      '1xs': '376px',
+      mobile_map: '390px',
+      xs: '480px',
+      mobile_map_sm_3: '540px',
+      sm_2: '590px',
+      sm: '640px',
+      md_2: '710px',
+      md: '760px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
     },
   },
   plugins: [],

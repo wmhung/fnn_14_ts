@@ -67,16 +67,18 @@ export default async function Page() {
           className='object-cover object-top opacity-30 dark:opacity-20 -z-20'
         />
 
+        {/* readability scrim: above image, below the edge-fade + text */}
+        <div
+          aria-hidden='true'
+          className='absolute inset-0 -z-[15] bg-white/30 dark:bg-slate-900/60'
+        />
+
         {/* fades all four edges into the page background */}
         <div
           aria-hidden='true'
           className='absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_rgb(248_250_252)_85%)] dark:bg-[radial-gradient(ellipse_at_center,_transparent_30%,_rgb(30_41_59)_85%)]'
         />
         <div className='relative max-w-3xl mx-auto text-center space-y-6'>
-          {/* <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
-            Finding Next Neverland
-          </span> */}
-
           <h1
             id='hero-title'
             className='text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-none'
