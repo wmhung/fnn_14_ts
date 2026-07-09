@@ -3,7 +3,7 @@ function Loader() {
     <div className='absolute z-[10000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
       <svg
         aria-hidden='true'
-        className='w-20 h-20 text-gray-200 animate-spin dark:text-gray-600 fill-purple-600'
+        className='w-20 h-20 text-slate-700 animate-spin dark:text-slate-600 fill-slate-50'
         viewBox='0 0 100 101'
         fill='none'
         xmlns='http://www.w3.org/2000/svg'

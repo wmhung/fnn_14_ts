@@ -24,7 +24,6 @@ import L from 'leaflet';
 import DetectClick from './DetectClick';
 import StarDisplay from '../StarDisplay';
 import Loader from './Loader';
-// [NEW] "parks near me" (Overpass) — client helper + shared config/type
 import { fetchNearbyPois, NearbyError } from '../../_lib/services/overpass';
 import {
   POI_MARKER_COLOR,
@@ -275,14 +274,7 @@ export default function Map() {
       mapRef.current
     ) {
       const { lat, lng } = geolocationPosition;
-      // BUGFIX (2026-07-02): hasClicked was never reset after firing, so it
-      // stayed `true` for the rest of the page session. Once getPosition()
-      // started retrying transient CoreLocation failures (see LocationContext
-      // fix), a *later*, unrelated getPosition() call — e.g. from the
-      // "Search Parks" button — could resolve and re-trigger this effect,
-      // silently redirecting the user into the Add Place form instead of
-      // showing nearby parks. Consume the flag the instant it fires so it
-      // can only ever drive one navigation per GPS-button click.
+
       setHasClicked(false);
       mapRef.current?.flyTo([lat, lng], 15, {
         animate: true,
@@ -438,6 +430,7 @@ export default function Map() {
   return (
     <div className='flex-1 relative h-full w-lg rounded-lg'>
       {loading && <Loader />}
+
       <MapContainer
         center={mapPosition}
         zoom={15}
