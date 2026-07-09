@@ -12,14 +12,19 @@ export const OVERPASS_ENDPOINTS = [
 export const LEISURE_TAGS = ['park', 'playground'];
 
 // Radius band (metres). Client sends one of these; server clamps to [MIN, MAX].
-// Default 1km (~12-min walk) balances useful coverage against map clutter;
-// 500m is tighter/walkable-now but risks near-empty results in sparse areas.
-export const POI_DEFAULT_RADIUS_M = 1000;
+// Default 500m (~6-min walk) — tight, walkable-now, minimal map clutter.
+export const POI_DEFAULT_RADIUS_M = 500;
 export const POI_MIN_RADIUS_M = 100;
 export const POI_MAX_RADIUS_M = 5000;
 
 // Cache the upstream Overpass result for a day — parks are near-static.
 export const OVERPASS_REVALIDATE_SECONDS = 86_400;
+
+// A candidate within this many metres of an already-saved place is treated as a
+// duplicate and hidden. Uses real haversine distance (not coordinate rounding,
+// which fails at grid boundaries — two points ~5m apart can round to different
+// cells). Tune up if saved pins sit far from the OSM park centroid.
+export const POI_DEDUPE_RADIUS_M = 80;
 
 // Overpass etiquette: identify the app (blank/generic User-Agents get rejected).
 export const OVERPASS_USER_AGENT =

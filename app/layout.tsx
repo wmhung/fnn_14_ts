@@ -1,12 +1,10 @@
 import '@/app/_styles/globals.css';
-import { Raleway } from 'next/font/google';
-import { PlaceProvider } from './_lib/contexts/PlaceContext';
-import { BookmarkProvider } from './_lib/contexts/BookmarkContext';
-import { LocationProvider } from './_lib/contexts/LocationContext';
-import { UserRoleProvider } from './_lib/contexts/UserRoleContext';
+import { Raleway, Press_Start_2P, Tektur, Exo_2 } from 'next/font/google';
+import AppProviders from './_lib/AppProviders';
 import Providers from './_lib/providers';
-import Header from './_components/Header';
 import { auth } from './_lib/auth';
+import Header from './_components/Header';
+import ThemeScript from './_components/ThemeScript';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -22,28 +20,11 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const session = await auth();
-
   return (
     <html lang='en' className='mx-0' suppressHydrationWarning>
       <head>
         {/* Inject dark mode preference script */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function () {
-                try {
-                  const theme = localStorage.getItem('theme');
-                  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (theme === 'dark' || (!theme && prefersDark)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (_) {}
-              })();
-            `,
-          }}
-        />
+        <ThemeScript />
       </head>
       <body
         className={`${raleway.className} font-semibold antialiased bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-slate-50 min-h-screen flex flex-col relative overflow-y-scroll`}
@@ -52,13 +33,7 @@ export default async function RootLayout({ children }) {
           <Header />
           <div className='flex-none 2xs:flex-1 xs:flex-1 mx-0 my-0 grid z-0'>
             <main className='max-w-7xl w-full mx-auto my-auto'>
-              <UserRoleProvider>
-                <PlaceProvider>
-                  <BookmarkProvider>
-                    <LocationProvider>{children}</LocationProvider>
-                  </BookmarkProvider>
-                </PlaceProvider>
-              </UserRoleProvider>
+              <AppProviders>{children}</AppProviders>
             </main>
           </div>
         </Providers>

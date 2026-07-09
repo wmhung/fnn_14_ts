@@ -17,6 +17,7 @@ import { usePlaces } from '../../_lib/contexts/PlaceContext';
 import { Place } from '../../_lib/contexts/PlaceContext';
 import { useBookmarks } from '../../_lib/contexts/BookmarkContext';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -25,7 +26,11 @@ import StarDisplay from '../StarDisplay';
 import Loader from './Loader';
 // [NEW] "parks near me" (Overpass) — client helper + shared config/type
 import { fetchNearbyPois, NearbyError } from '../../_lib/services/overpass';
-import { POI_MARKER_COLOR } from '../../_lib/utils/constants';
+import {
+  POI_MARKER_COLOR,
+  POI_DEDUPE_RADIUS_M,
+} from '../../_lib/utils/constants';
+import { haversineDistance } from '../../_lib/utils/distance';
 import type { Poi } from '@/types/place';
 
 type AiMarker = { coordinates: [number, number]; title?: string };
@@ -89,7 +94,8 @@ const userPositionIcon = L.divIcon({
   iconAnchor: [11, 11],
 });
 
-// Overpass POI candidate
+// [NEW] Overpass POI candidate — green pin with a star badge, kept distinct
+// from blue (saved), gold (bookmarked), red (active), cyan (you-are-here).
 const poiIcon = L.divIcon({
   className: '',
   html: `
@@ -113,11 +119,15 @@ export default function Map() {
 
   const { bookmarkedPlaceIds } = useBookmarks();
 
+  // Current user's email — dedupe candidates only against THIS user's saved places
+  const { data: session } = useSession();
+  const myEmail = session?.user?.email ?? null;
+
   const {
     isLoading: isLoadingPosition,
     position: geolocationPosition,
     getPosition,
-    error: locationError,
+    error: locationError, // [NEW] surfaced so a denied/failed fix can't hang the POI loader
     route, // active travel route set by the Distance tab
   } = useLocation();
 
@@ -136,12 +146,14 @@ export default function Map() {
   const mapRef = useRef<L.Map | null>(null);
   const pendingFlyToRef = useRef<[number, number] | null>(null);
 
-  // "parks near me" (Overpass) state
+  // [NEW] "parks near me" (Overpass) state
   const [pois, setPois] = useState<Poi[]>([]);
   const [isLoadingPois, setIsLoadingPois] = useState<boolean>(false);
   const [poiError, setPoiError] = useState<string | null>(null);
   const lastPoiKeyRef = useRef<string | null>(null);
+
   const poisRef = useRef<Poi[]>([]);
+
   const pendingNearbyRef = useRef<boolean>(false);
 
   const pickIcon = (placeId: number) => {
@@ -184,27 +196,29 @@ export default function Map() {
     setHasClicked(true);
   }
 
-  // Drop candidates that coincide with a place the user already saved
-  // so discovery never duplicates their own pins.
+  // Drop candidates that coincide with a place the user already saved, so
+  // discovery never duplicates their own pins.
   function dedupeAgainstSaved(found: Poi[]): Poi[] {
-    const roundKey = (lat: unknown, lng: unknown) =>
-      `${Number(lat).toFixed(3)},${Number(lng).toFixed(3)}`;
+    if (!myEmail) return found; // no session yet → don't hide anything
+    const saved = (Array.isArray(places) ? places : [])
+      .filter((p) => p.email === myEmail)
+      .map((p) => ({
+        lat: Number(p.position?.lat),
+        lng: Number(p.position?.lng),
+      }))
+      .filter((s) => !Number.isNaN(s.lat) && !Number.isNaN(s.lng));
 
-    const savedKeys = new Set(
-      (Array.isArray(places) ? places : [])
-        .filter(
-          (p) =>
-            p.position?.lat != null &&
-            p.position?.lng != null &&
-            !Number.isNaN(Number(p.position.lat)) &&
-            !Number.isNaN(Number(p.position.lng)),
-        )
-        .map((p) => roundKey(p.position!.lat, p.position!.lng)),
+    return found.filter(
+      (poi) =>
+        !saved.some(
+          (s) =>
+            haversineDistance(s, { lat: poi.lat, lng: poi.lng }) * 1000 <=
+            POI_DEDUPE_RADIUS_M,
+        ),
     );
-    return found.filter((poi) => !savedKeys.has(roundKey(poi.lat, poi.lng)));
   }
 
-  //  Fetch nearby parks for a given point (via the /api/overpass proxy).
+  // [NEW] Fetch nearby parks for a given point (via the /api/overpass proxy).
   async function runNearby(lat: number, lng: number): Promise<void> {
     const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
 
@@ -219,8 +233,7 @@ export default function Map() {
       lastPoiKeyRef.current = key;
       mapRef.current?.flyTo([lat, lng], 15, { animate: true, duration: 1.2 });
     } catch (err) {
-      // Log the real cause (status/message) so the generic toast isn't a dead end.
-      // console.error('[nearby] fetch failed:', err);
+      console.error('[nearby] fetch failed:', err);
       setPoiError(
         err instanceof NearbyError && err.code === 'BUSY'
           ? 'Parks service is busy — please try again.'
@@ -231,9 +244,11 @@ export default function Map() {
     }
   }
 
-  //  "Find parks near me" button.
+  // "Find parks near me" button.
   function handleFindNearby() {
     enterManualMode();
+
+    setHasClicked(false);
     if (geolocationPosition?.lat && geolocationPosition?.lng) {
       runNearby(geolocationPosition.lat, geolocationPosition.lng);
     } else {
@@ -244,7 +259,7 @@ export default function Map() {
     }
   }
 
-  // Used by the Clear button and after an Add.
+  // Remove the green candidate markers and reset the quantization guard
   function clearPois() {
     setPois([]);
     setPoiError(null);
@@ -260,16 +275,23 @@ export default function Map() {
       mapRef.current
     ) {
       const { lat, lng } = geolocationPosition;
+      // BUGFIX (2026-07-02): hasClicked was never reset after firing, so it
+      // stayed `true` for the rest of the page session. Once getPosition()
+      // started retrying transient CoreLocation failures (see LocationContext
+      // fix), a *later*, unrelated getPosition() call — e.g. from the
+      // "Search Parks" button — could resolve and re-trigger this effect,
+      // silently redirecting the user into the Add Place form instead of
+      // showing nearby parks. Consume the flag the instant it fires so it
+      // can only ever drive one navigation per GPS-button click.
+      setHasClicked(false);
       mapRef.current?.flyTo([lat, lng], 15, {
         animate: true,
         duration: 1.5,
       });
-      console.log('[nav] geoloc effect → form', lat, lng);
       router.push(`/placelist/form?lat=${lat}&lng=${lng}`);
     }
   }, [geolocationPosition, hasClicked]);
 
-  //  Keep poisRef in sync so runNearby's guard never reads a stale count.
   useEffect(() => {
     poisRef.current = pois;
   }, [pois]);
@@ -316,14 +338,11 @@ export default function Map() {
           });
         }
       }, 400);
-      // Clear the fallback if the effect re-runs (rapid clicks) or the
-      // component unmounts — prevents a stale flyTo from a previous place.
+
       return () => clearTimeout(fallback);
     }
   }, [currentPlace]);
 
-  // Fit map to the active route when one is set by the Distance tab.
-  // Toggling walking ↔ driving also re-fits since the geometry differs.
   useEffect(() => {
     if (route && mapRef.current && route.geometry.length > 1) {
       mapRef.current.fitBounds(route.geometry as L.LatLngBoundsExpression, {
@@ -358,12 +377,11 @@ export default function Map() {
     useEffect(() => {
       const container = map.getContainer();
 
-      // const initialFix = setTimeout(() => map.invalidateSize(), 0);
-      let raf1 = 0,
-        raf2 = 0;
-      const safety = setTimeout(() => map.invalidateSize(), 250); // cold-load net
+      let raf1 = 0;
+      let raf2 = 0;
+      const safety = setTimeout(() => map.invalidateSize(), 250);
       raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => map.invalidateSize()); // after layout+paint
+        raf2 = requestAnimationFrame(() => map.invalidateSize());
       });
 
       const ro = new ResizeObserver(() => {
@@ -382,7 +400,6 @@ export default function Map() {
         cancelAnimationFrame(raf1);
         cancelAnimationFrame(raf2);
         clearTimeout(safety);
-        // clearTimeout(initialFix);
         ro.disconnect();
       };
     }, [map]);
@@ -468,7 +485,7 @@ export default function Map() {
               </Popup>
             </Marker>
           ))}
-        {/*  Overpass "parks near me" candidates — ephemeral until saved */}
+        {/* [NEW] Overpass "parks near me" candidates — ephemeral until saved */}
         {pois.map((poi) => (
           <Marker key={poi.osmId} position={[poi.lat, poi.lng]} icon={poiIcon}>
             <Popup className='flex flex-col'>
@@ -487,12 +504,6 @@ export default function Map() {
                   const url = `/placelist/form?lat=${poi.lat}&lng=${poi.lng}&name=${encodeURIComponent(
                     poi.name ?? '',
                   )}`;
-                  console.log(
-                    '[nearby] add poi name =',
-                    poi.name,
-                    '| url =',
-                    url,
-                  );
                   // Clear candidates before navigating so they're gone when the
                   // user returns from the Add form.
                   clearPois();
@@ -549,7 +560,7 @@ export default function Map() {
         <ZoomHandler />
       </MapContainer>
 
-      <div className='absolute top-5 right-5 z-10'>
+      <div className='absolute top-5 right-5 z-10 flex flex-col items-end gap-2'>
         <button
           type='button'
           onClick={handleGetPosition}
@@ -561,6 +572,19 @@ export default function Map() {
             <BiSolidNavigation className='w-7 h-7 z-40' />
           )}
         </button>
+
+        {!isLoadingPosition && locationError && (
+          <div className='max-w-[220px] text-right text-xs bg-slate-800 text-slate-50 px-3 py-2 rounded-lg shadow-xl'>
+            {locationError}
+            <button
+              type='button'
+              onClick={handleGetPosition}
+              className='block mt-1 ml-auto font-semibold text-accent-300 hover:underline'
+            >
+              Try again
+            </button>
+          </div>
+        )}
       </div>
 
       {mode === 'ai' && submittedQuestion && (
@@ -591,9 +615,8 @@ export default function Map() {
         </div>
       </div>
 
-      {/* [NEW] Find parks near me — thumb-reachable at the bottom */}
+      {/* Find parks near me — thumb-reachable at the bottom */}
       <div className='absolute bottom-24 md:bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2'>
-        {' '}
         <button
           type='button'
           onClick={handleFindNearby}
