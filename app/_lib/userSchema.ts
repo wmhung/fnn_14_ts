@@ -46,8 +46,8 @@ export const updatePasswordSchema = z
   });
 
 export const updateUserSchema = z.object({
-  num_of_kids: z.union([z.string(), z.number(), z.null()]).optional(),
-  gender: z.string().optional(),
+  num_of_kids: z.enum(['', '1', '2', '3', 'over3']).nullable().optional(),
+  gender: z.enum(['', 'male', 'female']).nullable().optional(),
 });
 
 export const requestResetSchema = z.object({

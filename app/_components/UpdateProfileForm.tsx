@@ -205,8 +205,8 @@ export default function UpdateProfileForm({
             </p>
             {isOAuth ? (
               <p className={helperClass}>
-                Your photo is managed by your {providerLabel} account and can&apos;t
-                be changed here.
+                Your photo is managed by your {providerLabel} account and
+                can&apos;t be changed here.
               </p>
             ) : (
               <p className={helperClass}>

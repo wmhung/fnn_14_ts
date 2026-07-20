@@ -21,6 +21,7 @@ import {
   registerSchema,
   updatePasswordSchema,
   resetPasswordSchema,
+  updateUserSchema,
 } from './userSchema';
 
 // google authentication
@@ -81,7 +82,14 @@ export async function updateUser(prevState: any, formData: FormData) {
     session.user.provider === 'google' || session.user.provider === 'github';
 
   // ────────── Whitelist + validate ──────────
-
+  //  updateUserSchema (mirrors the form's select options).
+  const parsed = updateUserSchema.safeParse({
+    num_of_kids: formData.get('num_of_kids'),
+    gender: formData.get('gender'),
+  });
+  if (!parsed.success) {
+    return { error: 'Invalid profile value' };
+  }
   const numOfKids = String(formData.get('num_of_kids') ?? '');
   const gender = String(formData.get('gender') ?? '');
   const avatarFile = formData.get('avatar') as File | null;
