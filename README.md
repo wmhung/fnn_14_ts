@@ -10,25 +10,26 @@ A web app that helps parents find, save, rate, and remember the places they visi
 - **Log repeat visits** — record each return trip (date, rating, note) with full visit history; per-place `visit_count` and `last_visited_at` stay in sync automatically
 - **Bookmarks / favourites** for quick access to loved spots
 - **Search, sort, and pagination** across the place list
-- **Authentication & account management** (sign up, login, password reset, profile)
+- **Authentication & account management** — email/password plus Google & GitHub social login, password reset, profile
 - **Geocoding** of place names to coordinates via OpenAI (GPT-4o)
 - **Email** (password reset, feedback) via Resend
 - **Dark mode** and responsive mobile/desktop layouts
 
 ## Tech Stack
 
-| Layer         | Technology                                        |
-| ------------- | ------------------------------------------------- |
-| Framework     | Next.js 14 (App Router), React 18, TypeScript     |
-| Styling       | Tailwind CSS, styled-components                   |
-| Database      | Supabase (Postgres) + committed RPC (`log_visit`) |
-| Auth          | NextAuth (Auth.js v5), bcryptjs                   |
-| Maps          | Leaflet, React-Leaflet, Leaflet Routing Machine   |
-| Nearby search | Overpass API (OpenStreetMap), server-side proxy   |
-| AI / Geocode  | OpenAI API (GPT-4o)                               |
-| Email         | Resend                                            |
-| Forms         | React Hook Form, Zod                              |
-| Deployment    | Vercel                                            |
+| Layer         | Technology                                               |
+| ------------- | -------------------------------------------------------- |
+| Framework     | Next.js 14 (App Router), React 18, TypeScript            |
+| Styling       | Tailwind CSS, styled-components                          |
+| Database      | Supabase (Postgres) + committed RPC (`log_visit`)        |
+| Maps          | Leaflet, React-Leaflet                                   |
+| Routing       | OpenRouteService (server-side proxy)                     |
+| Nearby search | Overpass API (OpenStreetMap), server-side proxy          |
+| AI / Geocode  | OpenAI (GPT-4o) names the place, Google Maps geocodes it |
+| Auth          | NextAuth (Auth.js v5), bcryptjs, Google + GitHub OAuth   |
+| Email         | Resend                                                   |
+| Forms         | React Hook Form, Zod                                     |
+| Deployment    | Vercel                                                   |
 
 ## Getting Started
 
@@ -40,6 +41,28 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Prerequisites
+
+FNN talks to several third-party services. Register an account with each and generate a key/credential for the matching environment variable below. Only Overpass ("parks near me") needs no signup.
+
+| Service                                                                   | Used for                        | Where to get the key                         | Cost                |
+| ------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------- | ------------------- |
+| [Supabase](https://supabase.com)                                          | Database, storage, auth data    | Project → Settings → API                     | Free tier           |
+| [OpenAI](https://platform.openai.com)                                     | AI place search (GPT-4o)        | API Keys                                     | Paid (usage-based)  |
+| [Google Maps Platform](https://console.cloud.google.com/google/maps-apis) | Geocoding the AI's place name   | Credentials → API key (enable Geocoding API) | Free tier + billing |
+| [OpenRouteService](https://openrouteservice.org/dev/#/signup)             | Map routing / directions        | Dashboard → Request a token                  | Free tier           |
+| [Resend](https://resend.com)                                              | Password-reset & feedback email | API Keys                                     | Free tier           |
+| [Google Cloud](https://console.cloud.google.com/apis/credentials)         | "Continue with Google" login    | OAuth 2.0 Client ID                          | Free                |
+| [GitHub](https://github.com/settings/developers)                          | "Continue with GitHub" login    | New OAuth App                                | Free                |
+| Overpass (OpenStreetMap)                                                  | Find nearby parks               | **No key required**                          | Free                |
+
+For the two OAuth apps, register this callback URL (swap the domain in production):
+
+```
+http://localhost:3000/api/auth/callback/google
+http://localhost:3000/api/auth/callback/github
+```
 
 ### Scripts
 
@@ -58,18 +81,31 @@ Create a `.env.local` file in the project root:
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_KEY=          # anon/public key
 SUPABASE_SERVICE_ROLE_KEY=
 
 # NextAuth
-AUTH_SECRET=
-NEXTAUTH_URL=http://localhost:3000
+AUTH_SECRET=                      # any strong random string: `openssl rand -base64 32`
+NEXT_PUBLIC_SITE_URL=http://localhost:3000   # used to build the password-reset link
 
-# OpenAI (place-name geocoding)
+# Google OAuth ("Continue with Google")
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# GitHub OAuth ("Continue with GitHub")
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+
+# AI place search: OpenAI names the place, Google Maps geocodes it
 OPENAI_API_KEY=
+GOOGLE_MAPS_API_KEY=
+
+# OpenRouteService (map routing / directions)
+ORS_API_KEY=
 
 # Resend (transactional email)
 RESEND_API_KEY=
+EMAIL_FROM=                       # verified sender, e.g. "FNN <noreply@yourdomain.com>"
 ```
 
 > Overpass ("parks near me") needs no key — the server proxy identifies FNN via a `User-Agent` and caches results for a day (`OVERPASS_REVALIDATE_SECONDS`).

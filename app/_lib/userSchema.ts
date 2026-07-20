@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: 'Invalid email address' })
+    .max(254, { message: 'Email is too long' }),
   password: z
     .string()
     .min(8, { message: 'Password must be at least 8 characters' }),
@@ -10,10 +15,16 @@ export const loginSchema = z.object({
 export const registerSchema = z
   .object({
     full_name: z.string().min(1, { message: 'Full name is required' }).trim(),
-    email: z.string().email({ message: 'Invalid email address' }),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email({ message: 'Invalid email address' })
+      .max(254, { message: 'Email is too long' }),
     password: z
       .string()
-      .min(8, { message: 'Password must be at least 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' })
+      .max(72, { message: 'Password must be at most 72 characters' }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -25,7 +36,8 @@ export const updatePasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, { message: 'Password must be at least 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' })
+      .max(72, { message: 'Password must be at most 72 characters' }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -39,7 +51,12 @@ export const updateUserSchema = z.object({
 });
 
 export const requestResetSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: 'Invalid email address' })
+    .max(254, { message: 'Email is too long' }),
 });
 
 export const resetPasswordSchema = z
@@ -49,7 +66,8 @@ export const resetPasswordSchema = z
       .min(1, { message: 'This link is invalid or has expired.' }),
     password: z
       .string()
-      .min(8, { message: 'Password must be at least 8 characters' }),
+      .min(8, { message: 'Password must be at least 8 characters' })
+      .max(72, { message: 'Password must be at most 72 characters' }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

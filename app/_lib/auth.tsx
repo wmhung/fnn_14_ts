@@ -4,20 +4,16 @@ import Google from 'next-auth/providers/google';
 import GitHub from 'next-auth/providers/github';
 import { supabaseAdmin } from './supabase-admin'; // [FIX 4] was: supabase
 import { compare } from 'bcryptjs';
-import { z } from 'zod';
 import {
   CouldNotParseError,
   UserNotFoundError,
   InvalidPasswordError,
 } from './errors';
+import { loginSchema } from './userSchema';
 
-// 1. DEFINE VALIDATION RULES
-// Ensure input looks like an email and password is at least 8 chars long
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
+// 1. VALIDATION RULES
+// Reuse the shared loginSchema (normalizes email: trim + lowercase) so
+// login lookups match the normalized email stored at registration.
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     // 2. CONFIGURE EXTERNAL LOGINS (OAUTH)
