@@ -46,16 +46,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 FNN talks to several third-party services. Register an account with each and generate a key/credential for the matching environment variable below. Only Overpass ("parks near me") needs no signup.
 
-| Service                                                                   | Used for                        | Where to get the key                         | Cost                |
-| ------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------- | ------------------- |
-| [Supabase](https://supabase.com)                                          | Database, storage, auth data    | Project → Settings → API                     | Free tier           |
-| [OpenAI](https://platform.openai.com)                                     | AI place search (GPT-4o)        | API Keys                                     | Paid (usage-based)  |
-| [Google Maps Platform](https://console.cloud.google.com/google/maps-apis) | Geocoding the AI's place name   | Credentials → API key (enable Geocoding API) | Free tier + billing |
-| [OpenRouteService](https://openrouteservice.org/dev/#/signup)             | Map routing / directions        | Dashboard → Request a token                  | Free tier           |
-| [Resend](https://resend.com)                                              | Password-reset & feedback email | API Keys                                     | Free tier           |
-| [Google Cloud](https://console.cloud.google.com/apis/credentials)         | "Continue with Google" login    | OAuth 2.0 Client ID                          | Free                |
-| [GitHub](https://github.com/settings/developers)                          | "Continue with GitHub" login    | New OAuth App                                | Free                |
-| Overpass (OpenStreetMap)                                                  | Find nearby parks               | **No key required**                          | Free                |
+| Service                                                           | Used for                 | Cost           |
+| ----------------------------------------------------------------- | ------------------------ | -------------- |
+| [Supabase](https://supabase.com)                                  | Database, storage, auth  | Free tier      |
+| [OpenAI](https://platform.openai.com)                             | AI place search (GPT-4o) | Paid           |
+| [Google Maps](https://console.cloud.google.com/google/maps-apis)  | Geocoding                | Free + billing |
+| [OpenRouteService](https://openrouteservice.org/dev/#/signup)     | Routing / directions     | Free tier      |
+| [Resend](https://resend.com)                                      | Transactional email      | Free tier      |
+| [Google Cloud](https://console.cloud.google.com/apis/credentials) | Google login             | Free           |
+| [GitHub](https://github.com/settings/developers)                  | GitHub login             | Free           |
+| Overpass (OpenStreetMap)                                          | Find nearby parks        | Free — no key  |
 
 For the two OAuth apps, register this callback URL (swap the domain in production):
 

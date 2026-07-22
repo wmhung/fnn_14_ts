@@ -30,7 +30,7 @@ export default function LogVisitModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarn, setShowWarn] = useState(false);
 
-  // Esc to close (a11y)
+  // Esc to close
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
