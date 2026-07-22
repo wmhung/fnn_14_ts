@@ -106,9 +106,12 @@ ORS_API_KEY=
 # Resend (transactional email)
 RESEND_API_KEY=
 EMAIL_FROM=                       # verified sender, e.g. "FNN <noreply@yourdomain.com>"
+
+# Overpass (no API key — just a contact address for their User-Agent etiquette)
+OVERPASS_CONTACT=                 # e.g. you@yourdomain.com
 ```
 
-> Overpass ("parks near me") needs no key — the server proxy identifies FNN via a `User-Agent` and caches results for a day (`OVERPASS_REVALIDATE_SECONDS`).
+> Overpass ("parks near me") needs no API key — but their etiquette asks apps to identify themselves, so set `OVERPASS_CONTACT` to an address they can reach you at. The server proxy builds the `User-Agent` from it and caches results for a day (`OVERPASS_REVALIDATE_SECONDS`).
 
 ## Project Structure
 

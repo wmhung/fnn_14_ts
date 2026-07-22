@@ -27,8 +27,7 @@ export const OVERPASS_REVALIDATE_SECONDS = 86_400;
 export const POI_DEDUPE_RADIUS_M = 80;
 
 // Overpass etiquette: identify the app (blank/generic User-Agents get rejected).
-export const OVERPASS_USER_AGENT =
-  'FNN/1.0 (Finding Next Neverland; brucewmhung@gmail.com)';
+export const OVERPASS_USER_AGENT = `FNN/1.0 (Finding Next Neverland; ${process.env.OVERPASS_CONTACT ?? 'contact@example.com'})`;
 
 // Marker colour for POI candidates — distinct from blue (saved), gold
 // (bookmarked), red (active), cyan (you-are-here) used in Map.tsx.
