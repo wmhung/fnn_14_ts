@@ -16,12 +16,12 @@ export interface Place {
   image?: string;
   email?: string;
   user_name?: string;
-  // [NEW] denormalized repeat-visit counters (kept in sync by log_visit RPC)
+  // denormalized repeat-visit counters (kept in sync by log_visit RPC)
   visit_count?: number;
   last_visited_at?: string | null;
 }
 
-// [NEW] one repeat-visit record (visits table)
+// one repeat-visit record (visits table)
 export interface Visit {
   id: number;
   place_id: number;
@@ -41,11 +41,11 @@ export type VisitInput = {
   visitedAt?: string; // ISO; defaults to now
 };
 
-// [NEW] moved here from PlaceContext.tsx
+// moved here from PlaceContext.tsx
 // CREATE input — image must be provided (File on first upload, or URL string)
 export type PlaceInput = Omit<Place, 'id' | 'image'> & { image: File | string };
 
-// [NEW] UPDATE input — id required, every other field optional
+// UPDATE input — id required, every other field optional
 export type PlaceUpdateInput = Partial<Omit<Place, 'id' | 'image'>> & {
   id: number;
   image?: File | string;
@@ -63,7 +63,7 @@ export type Bookmark = {
   [key: string]: any;
 };
 
-// [NEW] Overpass "parks near me" candidate.
+// Overpass "parks near me" candidate.
 // Ephemeral — a Poi is NOT a Place. It only becomes a `placelist` row when the
 // user taps "Add" and saves. Kept deliberately separate so external OSM data
 // can never pollute user-owned rows.

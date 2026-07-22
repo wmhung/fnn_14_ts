@@ -5,6 +5,12 @@ import { useUrlPosition } from '@/app/_lib/hooks/useUrlPosition';
 import { usePlaces } from '../_lib/contexts/PlaceContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getUserPlaceCount, createFeedback } from '@/app/_lib/data-service';
+import {
+  validateImage,
+  ACCEPT_ATTR,
+  MAX_PLACE_IMAGE_BYTES,
+  MAX_PLACE_IMAGE_LABEL,
+} from '@/app/_lib/utils/storage-key';
 
 // [CHANGED] import canonical types from the single source of truth
 import type { Place, PlaceInput } from '@/types/place';
@@ -54,13 +60,20 @@ export default function Form({
   const lat = isEdit ? (initialPlace?.position?.lat ?? null) : urlLat;
   const lng = isEdit ? (initialPlace?.position?.lng ?? null) : urlLng;
 
-  // [NEW] Optional place name handed in by a discovered POI
+  // Optional place name handed in by a discovered POI
   // (Overpass "Add this place" → /placelist/form?...&name=). Create mode only.
   const searchParams = useSearchParams();
   const urlName = searchParams.get('name');
-  // console.log('[form] received search =', searchParams.toString());
 
-  const { createPlace, updatePlace, isLoading } = usePlaces();
+  //  `error` was never destructured, so upload failures dispatched by
+  // PlaceContext.uploadImage never reached the screen — the form just went
+  // quiet. That's what made the 400 InvalidKey bug so hard to see.
+  const {
+    createPlace,
+    updatePlace,
+    isLoading,
+    error: placeError,
+  } = usePlaces();
   const router = useRouter();
   const { email, full_name } = user;
 
@@ -85,6 +98,8 @@ export default function Form({
   const [geocodingError, setGeocodingError] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [imageError, setImageError] = useState('');
+
   useEffect(() => {
     if (isEdit) return;
     if (urlName) setPlaceName(urlName);
@@ -92,7 +107,18 @@ export default function Form({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setImage(e.target.files[0]);
+      const file = e.target.files[0];
+      // Reject at pick time, not submit time — the user finds out immediately
+      // and still has the picker fresh in mind.
+      const invalid = validateImage(file, MAX_PLACE_IMAGE_BYTES);
+      if (invalid) {
+        setImageError(invalid);
+        setImage(null);
+        e.target.value = ''; // allow re-picking the same file after fixing it
+        return;
+      }
+      setImageError('');
+      setImage(file);
     }
   };
 
@@ -202,7 +228,6 @@ export default function Form({
       image: image as File,
       star_rating: starRating,
       email,
-      user_name: displayName,
     };
 
     try {
@@ -251,12 +276,14 @@ export default function Form({
         className='flex flex-col w-[30rem] h-[83vh] mx-3 px-2 py-3 overflow-y-scroll overflow-x-hidden gap-[2px] list-none border rounded-lg inset-shadow dark:bg-slate-800 dark:border-slate-700'
         onSubmit={submit}
       >
-        <h1 className='text-center text-xl font-bold uppercase my-2 '>
+        <h1 className='text-center text-xl font-bold uppercase my-2'>
           {isEdit ? 'Edit Place' : 'Add Place'}
         </h1>
 
-        {errorMsg && (
-          <p className='text-red-500 text-center font-semibold'>{errorMsg}</p>
+        {(errorMsg || placeError) && (
+          <p className='text-red-500 text-center font-semibold'>
+            {errorMsg || placeError}
+          </p>
         )}
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
@@ -336,7 +363,20 @@ export default function Form({
               Current image will be kept unless you choose a new one.
             </p>
           )}
-          <input type='file' onChange={handleFileChange} disabled={isLoading} />
+          <input
+            type='file'
+            accept={ACCEPT_ATTR}
+            onChange={handleFileChange}
+            disabled={isLoading}
+          />
+          <p className='text-xs text-slate-500 mt-1'>
+            PNG or JPEG, up to {MAX_PLACE_IMAGE_LABEL}.
+          </p>
+          {imageError && (
+            <p className='text-xs text-red-500 font-semibold mt-1'>
+              {imageError}
+            </p>
+          )}
           {isLoading && <p>{isEdit ? 'Updating...' : 'Uploading...'}</p>}
         </div>
 

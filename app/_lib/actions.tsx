@@ -23,6 +23,11 @@ import {
   resetPasswordSchema,
   updateUserSchema,
 } from './userSchema';
+import {
+  buildStorageKey,
+  validateImage,
+  MAX_AVATAR_BYTES,
+} from './utils/storage-key';
 
 // google authentication
 export async function signInAction() {
@@ -66,10 +71,6 @@ export async function updatePassword(formData: FormData) {
   redirect('/login');
 }
 
-// Whitelisted values — anything else is rejected as a 400.
-const ALLOWED_NUM_OF_KIDS = new Set(['', '1', '2', '3', 'over3']);
-const ALLOWED_GENDER = new Set(['', 'male', 'female', 'both']);
-
 export async function updateUser(prevState: any, formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) {
@@ -82,7 +83,8 @@ export async function updateUser(prevState: any, formData: FormData) {
     session.user.provider === 'google' || session.user.provider === 'github';
 
   // ────────── Whitelist + validate ──────────
-  //  updateUserSchema (mirrors the form's select options).
+
+  // Single source of truth: updateUserSchema (mirrors the form's select options).
   const parsed = updateUserSchema.safeParse({
     num_of_kids: formData.get('num_of_kids'),
     gender: formData.get('gender'),
@@ -90,16 +92,9 @@ export async function updateUser(prevState: any, formData: FormData) {
   if (!parsed.success) {
     return { error: 'Invalid profile value' };
   }
-  const numOfKids = String(formData.get('num_of_kids') ?? '');
-  const gender = String(formData.get('gender') ?? '');
+  const numOfKids = parsed.data.num_of_kids ?? '';
+  const gender = parsed.data.gender ?? '';
   const avatarFile = formData.get('avatar') as File | null;
-
-  if (!ALLOWED_NUM_OF_KIDS.has(numOfKids)) {
-    return { error: 'Invalid num_of_kids value' };
-  }
-  if (!ALLOWED_GENDER.has(gender)) {
-    return { error: 'Invalid gender value' };
-  }
 
   // Build the update payload EXPLICITLY — no spread, no ambient fields. [FIX]
   const updateData: Record<string, any> = {
@@ -108,16 +103,15 @@ export async function updateUser(prevState: any, formData: FormData) {
   };
 
   if (!isOAuth && avatarFile && avatarFile.size > 0) {
-    // Light file-type guard while we're here — matches the form's accept= attr.
-    if (!['image/png', 'image/jpeg'].includes(avatarFile.type)) {
-      return { error: 'Avatar must be PNG or JPEG' };
-    }
+    // Server-side revalidation: the client checks too, but a Server Action is
+    // a public endpoint — the browser's check is UX, this one is the guard.
+    const invalid = validateImage(avatarFile, MAX_AVATAR_BYTES);
+    if (invalid) return { error: invalid };
 
-    const avatarName =
-      `${Math.floor(Math.random() * 1000 + 1)}-${avatarFile.name}`.replaceAll(
-        '/',
-        '',
-      );
+    // Key is generated, never derived from avatarFile.name — a non-ASCII
+    // filename fails Supabase's key regex with 400 InvalidKey. The UUID also
+    // removes the collision risk the old Math.random() prefix carried.
+    const avatarName = buildStorageKey(avatarFile.type)!;
     const avatarPath = `${supabaseUrl}/storage/v1/object/public/avatar/${avatarName}`;
     const { error: storageError } = await supabase.storage
       .from('avatar')
@@ -303,7 +297,10 @@ export async function requestPasswordReset(
   return { ok: true };
 }
 
-// Validate a reset token WITHOUT consuming it (for page load)
+// ── 1b. Validate a reset token WITHOUT consuming it (for page load) ─
+// Read-only: used by the reset-password page to decide whether to render
+// the form or the expired-state card. The real security gate is still
+// resetPassword() below, which re-checks on submit.
 export async function isResetTokenValid(rawToken: string): Promise<boolean> {
   if (!rawToken) return false;
 
@@ -335,6 +332,7 @@ export async function resetPassword(
   }
 
   const { token: rawToken, password } = parsed.data;
+
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
 
   const { data: row } = await supabaseAdmin // was supabase

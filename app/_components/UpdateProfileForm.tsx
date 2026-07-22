@@ -1,6 +1,12 @@
 'use client';
 
 import { updateUser } from '../_lib/actions';
+import {
+  validateImage,
+  ACCEPT_ATTR,
+  MAX_AVATAR_BYTES,
+  MAX_AVATAR_LABEL,
+} from '../_lib/utils/storage-key';
 import SubmitButton from './SubmitButton';
 import { useFormState } from 'react-dom';
 import { useRef, useState } from 'react';
@@ -63,10 +69,20 @@ export default function UpdateProfileForm({
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
     avatar,
   );
+  const [avatarError, setAvatarError] = useState('');
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
+      // Reject at pick time so the user isn't told after a failed submit.
+      // updateUser revalidates server-side — this check is UX, not the guard.
+      const invalid = validateImage(file, MAX_AVATAR_BYTES);
+      if (invalid) {
+        setAvatarError(invalid);
+        e.target.value = '';
+        return;
+      }
+      setAvatarError('');
       setAvatarPreview(URL.createObjectURL(file));
     }
   }
@@ -209,9 +225,15 @@ export default function UpdateProfileForm({
                 can&apos;t be changed here.
               </p>
             ) : (
-              <p className={helperClass}>
-                Tap the circle to upload. PNG or JPG, up to ~2 MB.
-              </p>
+              <>
+                <p className={helperClass}>
+                  Tap the circle to upload. PNG or JPEG, up to{' '}
+                  {MAX_AVATAR_LABEL}.
+                </p>
+                {avatarError && (
+                  <p className='text-xs text-red-500 mt-1'>{avatarError}</p>
+                )}
+              </>
             )}
           </div>
 
@@ -222,7 +244,7 @@ export default function UpdateProfileForm({
               id='avatar'
               type='file'
               name='avatar'
-              accept='image/png,image/jpeg'
+              accept={ACCEPT_ATTR}
               onChange={handleAvatarChange}
               className='sr-only'
             />

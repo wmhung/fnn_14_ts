@@ -1,5 +1,6 @@
 'use server';
 
+import { unstable_noStore as noStore } from 'next/cache';
 import { supabase } from './supabase';
 import { PAGE_SIZE } from './utils/constants';
 import type {
@@ -10,16 +11,17 @@ import type {
   VisitInput,
 } from '@/types/place';
 import type { User, UpdateUser } from '@/types/user';
-import { unstable_noStore as noStore } from 'next/cache';
 
 /////////////
 // GET
 
 // get single place
+// user_name is DERIVED from user.full_name via the placelist_email_fkey
+// relationship — never stored. See getPlaceLists for the full rationale.
 export async function getPlace(id: number): Promise<Place | null> {
   const { data, error } = await supabase
     .from('placelist')
-    .select('*')
+    .select('*, user(full_name)')
     .eq('id', id)
     .single();
 
@@ -28,7 +30,8 @@ export async function getPlace(id: number): Promise<Place | null> {
     return null;
   }
 
-  return data as Place;
+  const { user, ...place } = data as any;
+  return { ...place, user_name: user?.full_name ?? 'Anonymous' } as Place;
 }
 
 /////////////
@@ -96,8 +99,13 @@ export async function getPlaceLists({
   count: number | null;
 }> {
   let queryBuilder = supabase
+    // Embed user.full_name instead of reading the old denormalized
+    // placelist.user_name copy — that copy had no sync path, so renaming a
+    // user left every existing place showing the stale name (update anomaly).
+    // Plain embed (not !inner) on purpose: if a user row ever disappears, the
+    // place should still render as "Anonymous" rather than vanish from the list.
     .from('placelist')
-    .select('*', { count: 'exact' })
+    .select('*, user(full_name)', { count: 'exact' })
     .eq('email', email);
 
   // filtering
@@ -137,13 +145,26 @@ export async function getPlaceLists({
     throw new Error(error.message);
   }
 
-  return { data: (data as Place[]) ?? [], count };
+  // Flatten the embedded user object so the UI contract is unchanged — same
+  // pattern as getBookmarkLists. Callers (e.g. Map.tsx) still read
+  // `place.user_name`; it is now derived per-read, so it cannot drift.
+  const flattened = ((data ?? []) as any[]).map((row) => {
+    const { user, ...place } = row;
+    return { ...place, user_name: user?.full_name ?? 'Anonymous' };
+  }) as Place[];
+
+  return { data: flattened, count };
 }
 
 // get user place count
 export async function getUserPlaceCount(email: string): Promise<number> {
-  noStore(); // ← always read live; otherwise Next caches the count and it goes stale
-
+  // Always read live — without this, Next.js caches the Supabase fetch and the
+  // count goes stale (e.g. keeps returning 4 after the rows were deleted), which
+  // breaks first-add detection.
+  noStore();
+  // NOTE: dropped `head: true` — it was returning a null count in this setup,
+  // so first-add detection always saw 0 and the feedback modal showed on every
+  // add. Matches the working getPhotosCount / getBookmarksCount pattern.
   const { count, error } = await supabase
     .from('placelist')
     .select('*', { count: 'exact' })

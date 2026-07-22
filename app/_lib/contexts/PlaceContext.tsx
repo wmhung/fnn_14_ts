@@ -9,8 +9,12 @@ import {
   ReactNode,
 } from 'react';
 import { supabase, supabaseUrl } from '@/app/_lib/supabase';
+import { buildStorageKey } from '@/app/_lib/utils/storage-key';
+
+// import the canonical types instead of redeclaring them
 import type { Place, PlaceInput, PlaceUpdateInput } from '@/types/place';
 
+// re-export so existing imports don't break
 export type { Place, PlaceInput, PlaceUpdateInput };
 
 interface PlaceState {
@@ -96,11 +100,16 @@ function PlaceProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'loading' });
     const { data, error } = await supabase
       .from('placelist')
-      .select('*')
+      .select('*, user(full_name)')
       .order('id');
     if (error) dispatch({ type: 'rejected', payload: error.message });
-    else if (data)
-      dispatch({ type: 'places/loaded', payload: data as Place[] });
+    else if (data) {
+      const flattened = (data as any[]).map(({ user, ...place }) => ({
+        ...place,
+        user_name: user?.full_name ?? 'Anonymous',
+      })) as Place[];
+      dispatch({ type: 'places/loaded', payload: flattened });
+    }
   }, []);
 
   const getPlace = useCallback(
@@ -109,17 +118,34 @@ function PlaceProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'loading' });
       const { data, error } = await supabase
         .from('placelist')
-        .select('*')
+        .select('*, user(full_name)')
         .eq('id', id)
         .single();
       if (error) dispatch({ type: 'rejected', payload: error.message });
-      else dispatch({ type: 'place/loaded', payload: data as Place });
+      else {
+        // Same derive-on-read as fetchPlaces — see the note above.
+        const { user, ...place } = data as any;
+        dispatch({
+          type: 'place/loaded',
+          payload: {
+            ...place,
+            user_name: user?.full_name ?? 'Anonymous',
+          } as Place,
+        });
+      }
     },
     [currentPlace],
   );
 
   async function uploadImage(file: File): Promise<string | null> {
-    const imageName = `${Date.now()}-${file.name}`.replaceAll('/', '');
+    const imageName = buildStorageKey(file.type);
+    if (!imageName) {
+      dispatch({
+        type: 'rejected',
+        payload: 'Image must be a PNG or JPEG file.',
+      });
+      return null;
+    }
     const { error: storageError } = await supabase.storage
       .from('photos')
       .upload(imageName, file);
@@ -145,17 +171,23 @@ function PlaceProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase
       .from('placelist')
       .insert([{ ...rest, image: imagePath }])
-      .select();
+      .select('*, user(full_name)');
 
     if (error) {
       dispatch({ type: 'rejected', payload: error.message });
       return;
     }
 
-    const createdPlace = data?.[0] as Place;
-    if (createdPlace)
+    let createdPlace: Place | undefined;
+    if (data?.[0]) {
+      const { user, ...place } = data[0] as any;
+      createdPlace = {
+        ...place,
+        user_name: user?.full_name ?? 'Anonymous',
+      } as Place;
       dispatch({ type: 'place/created', payload: createdPlace });
-    return data as Place[];
+    }
+    return (createdPlace ? [createdPlace] : []) as Place[];
   }
 
   async function updatePlace(input: PlaceUpdateInput) {
@@ -179,14 +211,19 @@ function PlaceProvider({ children }: { children: ReactNode }) {
     let query = supabase.from('placelist').update(patch).eq('id', id);
     if (email) query = query.eq('email', email);
 
-    const { data, error } = await query.select().single();
+    // Embed so the updated row carries a derived user_name, matching fetchPlaces.
+    const { data, error } = await query.select('*, user(full_name)').single();
 
     if (error) {
       dispatch({ type: 'rejected', payload: error.message });
       return;
     }
 
-    const updated = data as Place;
+    const { user, ...place } = data as any;
+    const updated = {
+      ...place,
+      user_name: user?.full_name ?? 'Anonymous',
+    } as Place;
     dispatch({ type: 'place/updated', payload: updated });
     return updated;
   }
