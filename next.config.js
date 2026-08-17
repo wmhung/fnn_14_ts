@@ -36,8 +36,16 @@ const nextConfig = {
   // Quick fix: alias legacy /bookmark paths to /placelist
   async redirects() {
     return [
-      { source: '/bookmark', destination: '/placelist', permanent: false },
-      { source: '/bookmarks', destination: '/placelist', permanent: false },
+      {
+        source: '/placelist/bookmark',
+        destination: '/placelist',
+        permanent: false,
+      },
+      {
+        source: '/placelist/bookmarks',
+        destination: '/placelist',
+        permanent: false,
+      },
     ];
   },
 };
