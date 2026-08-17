@@ -33,21 +33,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Quick fix: alias legacy /bookmark paths to /placelist
-  async redirects() {
-    return [
-      {
-        source: '/placelist/bookmark',
-        destination: '/placelist',
-        permanent: false,
-      },
-      {
-        source: '/placelist/bookmarks',
-        destination: '/placelist',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 module.exports = nextConfig;
