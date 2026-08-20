@@ -86,6 +86,7 @@ function PlaceItem({ place }: PlaceItemProps) {
 
   return (
     <Link
+      data-tour='place-card'
       onClick={() => getPlace(id)}
       prefetch={false}
       href={`placelist/${id}/?lat=${position?.lat ?? 0}&lng=${
@@ -96,7 +97,7 @@ function PlaceItem({ place }: PlaceItemProps) {
                  hover:border-accent-600 hover:shadow-accent-600 hover:shadow-lg
                  dark:shadow-accent-600 transition-all duration-300'
     >
-      {/* place name + date */}
+      {/* ROW 1: place name + date */}
       <div className='flex items-center justify-between gap-2 mb-1'>
         <h3 className='flex-1 min-w-0 font-semibold text-base truncate'>
           {placeName}
@@ -106,12 +107,13 @@ function PlaceItem({ place }: PlaceItemProps) {
         </span>
       </div>
 
-      {/* rating (left) + actions (right) */}
+      {/* ROW 2: rating (left) + actions (right) */}
       <div className='flex items-center justify-between'>
         <span className='text-sm'>{starRating ? `${starRating} ⭐️` : '—'}</span>
 
         <div className='flex items-center gap-3'>
           <button
+            data-tour='bookmark'
             onClick={handleToggleBookmark}
             aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
             className='p-1 -m-1 cursor-pointer'

@@ -24,6 +24,7 @@ import L from 'leaflet';
 import DetectClick from './DetectClick';
 import StarDisplay from '../StarDisplay';
 import Loader from './Loader';
+// [NEW] "parks near me" (Overpass) — client helper + shared config/type
 import { fetchNearbyPois, NearbyError } from '../../_lib/services/overpass';
 import {
   POI_MARKER_COLOR,
@@ -116,9 +117,12 @@ export default function Map() {
     currentPlace: Place | null;
   };
 
+  // Single source of truth: BookmarkContext exposes a Set<number> of
+  // bookmarked place_ids. No local useMemo needed.
   const { bookmarkedPlaceIds } = useBookmarks();
 
-  // Current user's email — dedupe candidates only against THIS user's saved places
+  // [NEW] Current user's email — dedupe candidates only against THIS user's
+  // saved places, while the map still renders everyone's markers.
   const { data: session } = useSession();
   const myEmail = session?.user?.email ?? null;
 
@@ -149,10 +153,13 @@ export default function Map() {
   const [pois, setPois] = useState<Poi[]>([]);
   const [isLoadingPois, setIsLoadingPois] = useState<boolean>(false);
   const [poiError, setPoiError] = useState<string | null>(null);
+  // Coordinate-quantization guard: skip refetch if we haven't meaningfully moved.
   const lastPoiKeyRef = useRef<string | null>(null);
-
+  // Ref mirror of `pois` so runNearby's guard reads the latest value even when
+  // invoked from an effect closure (avoids a stale `pois.length` read).
   const poisRef = useRef<Poi[]>([]);
-
+  // Set when the button is tapped before a GPS fix exists — triggers the fetch
+  // once LocationContext delivers a position (without hijacking the locate flow).
   const pendingNearbyRef = useRef<boolean>(false);
 
   const pickIcon = (placeId: number) => {
@@ -195,8 +202,13 @@ export default function Map() {
     setHasClicked(true);
   }
 
-  // Drop candidates that coincide with a place the user already saved, so
-  // discovery never duplicates their own pins.
+  // [NEW] Drop candidates that coincide with a place the user already saved, so
+  // discovery never duplicates their own pins. Uses real haversine distance
+  // (< POI_DEDUPE_RADIUS_M) rather than coordinate rounding — rounding fails at
+  // grid boundaries (two points ~5m apart can round to different cells).
+  // Scoped to THIS user's places (`p.email === myEmail`) so other users' pins
+  // still show on the map but never suppress a candidate. Supabase returns
+  // coords as strings, so coerce with Number().
   function dedupeAgainstSaved(found: Poi[]): Poi[] {
     if (!myEmail) return found; // no session yet → don't hide anything
     const saved = (Array.isArray(places) ? places : [])
@@ -220,7 +232,8 @@ export default function Map() {
   // [NEW] Fetch nearby parks for a given point (via the /api/overpass proxy).
   async function runNearby(lat: number, lng: number): Promise<void> {
     const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
-
+    // Quantization guard: same spot + we already have results → reuse them.
+    // Read from poisRef (not `pois`) so an effect-invoked call isn't stale.
     if (key === lastPoiKeyRef.current && poisRef.current.length) return;
 
     setIsLoadingPois(true);
@@ -228,10 +241,12 @@ export default function Map() {
     try {
       const found = await fetchNearbyPois({ at: { lat, lng } });
       setPois(dedupeAgainstSaved(found));
-
+      // Only remember this spot once a fetch actually succeeds, so a failure
+      // (or a dedupe that empties results) doesn't block a legitimate retry.
       lastPoiKeyRef.current = key;
       mapRef.current?.flyTo([lat, lng], 15, { animate: true, duration: 1.2 });
     } catch (err) {
+      // Log the real cause (status/message) so the generic toast isn't a dead end.
       console.error('[nearby] fetch failed:', err);
       setPoiError(
         err instanceof NearbyError && err.code === 'BUSY'
@@ -243,14 +258,19 @@ export default function Map() {
     }
   }
 
-  // "Find parks near me" button.
+  // [NEW] "Find parks near me" button. Uses the current position if we have one;
+  // otherwise requests a fix and defers the fetch to the effect below.
   function handleFindNearby() {
     enterManualMode();
-
+    // Defensive: make sure a dangling GPS-button click (hasClicked) can't
+    // hijack this position resolution into a form-navigation instead of a
+    // parks search — see the effect below for the full explanation.
     setHasClicked(false);
     if (geolocationPosition?.lat && geolocationPosition?.lng) {
       runNearby(geolocationPosition.lat, geolocationPosition.lng);
     } else {
+      // Show the loading state while we wait for the GPS fix so the button
+      // disables and gives feedback. Cleared by runNearby or the error effect.
       setIsLoadingPois(true);
       setPoiError(null);
       pendingNearbyRef.current = true;
@@ -258,7 +278,8 @@ export default function Map() {
     }
   }
 
-  // Remove the green candidate markers and reset the quantization guard
+  // [NEW] Remove the green candidate markers and reset the quantization guard
+  // so the next search runs fresh. Used by the Clear button and after an Add.
   function clearPois() {
     setPois([]);
     setPoiError(null);
@@ -274,7 +295,14 @@ export default function Map() {
       mapRef.current
     ) {
       const { lat, lng } = geolocationPosition;
-
+      // BUGFIX (2026-07-02): hasClicked was never reset after firing, so it
+      // stayed `true` for the rest of the page session. Once getPosition()
+      // started retrying transient CoreLocation failures (see LocationContext
+      // fix), a *later*, unrelated getPosition() call — e.g. from the
+      // "Search Parks" button — could resolve and re-trigger this effect,
+      // silently redirecting the user into the Add Place form instead of
+      // showing nearby parks. Consume the flag the instant it fires so it
+      // can only ever drive one navigation per GPS-button click.
       setHasClicked(false);
       mapRef.current?.flyTo([lat, lng], 15, {
         animate: true,
@@ -284,10 +312,14 @@ export default function Map() {
     }
   }, [geolocationPosition, hasClicked]);
 
+  // [NEW] Keep poisRef in sync so runNearby's guard never reads a stale count.
   useEffect(() => {
     poisRef.current = pois;
   }, [pois]);
 
+  // [NEW] When "Find parks near me" was tapped before a fix existed, run the
+  // Overpass fetch as soon as the position lands. Guarded so it doesn't collide
+  // with the locate-to-form flow above (that one requires `hasClicked`).
   useEffect(() => {
     if (
       pendingNearbyRef.current &&
@@ -297,8 +329,11 @@ export default function Map() {
       pendingNearbyRef.current = false;
       runNearby(geolocationPosition.lat, geolocationPosition.lng);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geolocationPosition]);
 
+  // [NEW] If geolocation fails/denied while a nearby fetch is pending, don't
+  // leave the loader stuck — clear it and surface a soft message.
   useEffect(() => {
     if (pendingNearbyRef.current && locationError) {
       pendingNearbyRef.current = false;
@@ -330,11 +365,14 @@ export default function Map() {
           });
         }
       }, 400);
-
+      // Clear the fallback if the effect re-runs (rapid clicks) or the
+      // component unmounts — prevents a stale flyTo from a previous place.
       return () => clearTimeout(fallback);
     }
   }, [currentPlace]);
 
+  // Fit map to the active route when one is set by the Distance tab.
+  // Toggling walking ↔ driving also re-fits since the geometry differs.
   useEffect(() => {
     if (route && mapRef.current && route.geometry.length > 1) {
       mapRef.current.fitBounds(route.geometry as L.LatLngBoundsExpression, {
@@ -369,6 +407,19 @@ export default function Map() {
     useEffect(() => {
       const container = map.getContainer();
 
+      // One-time correction: the map mounts via dynamic({ ssr:false }) inside a
+      // flex pane, so Leaflet often initializes before the container reaches its
+      // final width — leaving a broken, partial tile grid on first open. The
+      // ResizeObserver below only reacts to size *changes*, which can be missed
+      // on that first paint, so force an unconditional invalidateSize once the
+      // chunk + layout have settled.
+      //
+      // A setTimeout(0) fires on the next macrotask, which on a cold load can
+      // still run BEFORE the browser paints the final flex width (and before the
+      // web font/CSS reflow the box) — so Leaflet would recompute its tile grid
+      // against a still-wrong size and never request the missing tiles. Wait for
+      // layout + paint via a double requestAnimationFrame, then keep one delayed
+      // invalidateSize as a safety net for late font/CSS reflow.
       let raf1 = 0;
       let raf2 = 0;
       const safety = setTimeout(() => map.invalidateSize(), 250);
@@ -428,9 +479,8 @@ export default function Map() {
   }
 
   return (
-    <div className='flex-1 relative h-full w-lg rounded-lg'>
+    <div className='flex-1 relative h-full w-lg rounded-lg' data-tour='map'>
       {loading && <Loader />}
-
       <MapContainer
         center={mapPosition}
         zoom={15}
@@ -565,7 +615,10 @@ export default function Map() {
             <BiSolidNavigation className='w-7 h-7 z-40' />
           )}
         </button>
-
+        {/* BUGFIX: locationError was captured in context but never rendered
+            here — a failed fix (e.g. kCLErrorLocationUnknown) made the
+            button silently revert to idle with zero feedback, which is
+            exactly what "the GPS button doesn't work" looks like. */}
         {!isLoadingPosition && locationError && (
           <div className='max-w-[220px] text-right text-xs bg-slate-800 text-slate-50 px-3 py-2 rounded-lg shadow-xl'>
             {locationError}
@@ -608,15 +661,16 @@ export default function Map() {
         </div>
       </div>
 
-      {/* Find parks near me — thumb-reachable at the bottom */}
+      {/* [NEW] Find parks near me — thumb-reachable at the bottom */}
       <div className='absolute bottom-24 md:bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2'>
         <button
           type='button'
+          data-tour='find-parks'
           onClick={handleFindNearby}
           disabled={isLoadingPois}
           className='flex items-center gap-2 px-5 py-3 rounded-full bg-accent-600 text-slate-50 font-semibold shadow-xl hover:text-accent-50 hover:bg-accent-300 disabled:opacity-70 whitespace-nowrap'
         >
-          {isLoadingPois ? '…' : pois.length ? 'Search' : 'Parks nearby'}
+          {isLoadingPois ? '…' : pois.length ? '↻ Search' : '🌳 Parks nearby'}
         </button>
         {pois.length > 0 && !isLoadingPois && (
           <button

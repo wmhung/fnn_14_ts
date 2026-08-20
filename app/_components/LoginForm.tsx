@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '../_lib/userSchema';
 import { login } from '../_lib/actions';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaExclamationCircle } from 'react-icons/fa';
 import SignInButton from './SignInButton';
@@ -20,15 +19,16 @@ const labelClass =
 const errorClass = 'text-xs text-red-600 dark:text-red-400 mt-1';
 
 function LoginForm() {
-  const router = useRouter();
   const [formError, setFormError] = useState('');
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
+  const [demoBusy, setDemoBusy] = useState(false);
 
   function toFormData(obj) {
     const formData = new FormData();
@@ -52,6 +52,26 @@ function LoginForm() {
     } catch (error) {
       console.error('Unexpected login error:', error);
       setFormError('An unexpected error occurred.');
+    }
+  };
+
+  // "Sign in as demo"
+  const DEMO = { email: 'guest@email.com', password: '12341234' };
+  const runDemo = async () => {
+    setDemoBusy(true);
+    try {
+      for (let i = 1; i <= DEMO.email.length; i++) {
+        setValue('email', DEMO.email.slice(0, i));
+        await new Promise((r) => setTimeout(r, 25));
+      }
+      for (let i = 1; i <= DEMO.password.length; i++) {
+        setValue('password', DEMO.password.slice(0, i));
+        await new Promise((r) => setTimeout(r, 25));
+      }
+      await new Promise((r) => setTimeout(r, 250));
+      await handleSubmit(onSubmit)();
+    } finally {
+      setDemoBusy(false);
     }
   };
 
@@ -122,6 +142,19 @@ function LoginForm() {
         >
           {isSubmitting ? 'Signing in...' : 'Continue with email'}
         </button>
+
+        {/* DEMO ACCESS — one-click guest login (no signup) */}
+        <button
+          type='button'
+          onClick={runDemo}
+          disabled={demoBusy || isSubmitting}
+          className='w-full px-6 py-2.5 rounded-lg font-medium border border-accent-500 text-accent-600 hover:bg-accent-500/10 disabled:opacity-60 disabled:cursor-not-allowed transition dark:text-accent-400'
+        >
+          {demoBusy ? 'Filling demo credentials…' : 'Sign in as demo →'}
+        </button>
+        <p className='text-xs text-center text-gray-500 dark:text-slate-400'>
+          Guest account · no signup needed
+        </p>
       </form>
 
       {/* DIVIDER */}

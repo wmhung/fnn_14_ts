@@ -3,6 +3,8 @@
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
+import GuestTour from '../_components/GuestTour';
+
 const DynamicMap = dynamic(() => import('../_components/map/Map'), {
   ssr: false,
 });
@@ -26,6 +28,9 @@ export default function ClientLayoutWrapper({ children, email }) {
 
   return (
     <div className='flex flex-col md:flex-row w-full h-full overflow-hidden'>
+      {/* Guest-only guided tour (renders nothing for real users) */}
+      <GuestTour email={email} />
+
       {/* Desktop layout */}
       <section className='relative hidden md:flex flex-col max-w-[28rem] lg:mx-auto'>
         {children}
