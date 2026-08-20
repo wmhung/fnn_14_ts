@@ -6,6 +6,7 @@ import { auth } from '@/app/_lib/auth';
 import { PiParkDuotone } from 'react-icons/pi';
 import { BsBookmarkStarFill } from 'react-icons/bs';
 import { FaMapMarkedAlt, FaArrowRight } from 'react-icons/fa';
+import DemoLoginButton from './_components/DemoLoginButton';
 
 type Feature = {
   Icon: React.ComponentType<{ className?: string }>;
@@ -100,6 +101,9 @@ export default async function Page() {
               {isLoggedIn ? 'Open my places' : 'Get started'}
               <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
             </Link>
+
+            {/* One-click demo — only for logged-out visitors */}
+            {!isLoggedIn && <DemoLoginButton />}
 
             <Link
               href='/about'
