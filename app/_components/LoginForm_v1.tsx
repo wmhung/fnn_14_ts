@@ -148,9 +148,9 @@ function LoginForm() {
           type='button'
           onClick={runDemo}
           disabled={demoBusy || isSubmitting}
-          className='w-full px-6 py-2.5 rounded-lg font-medium border border-accent-500 text-accent-600 hover:bg-accent-500/10 hover:font-extrabold disabled:opacity-60 disabled:cursor-not-allowed transition dark:text-accent-400'
+          className='w-full px-6 py-2.5 rounded-lg font-medium border border-accent-500 text-accent-600 hover:bg-accent-500/10 disabled:opacity-60 disabled:cursor-not-allowed transition dark:text-accent-400'
         >
-          {demoBusy ? 'Filling demo credentials…' : 'Sign in as demo'}
+          {demoBusy ? 'Filling demo credentials…' : 'Sign in as demo →'}
         </button>
         <p className='text-xs text-center text-gray-500 dark:text-slate-400'>
           Guest account · no signup needed

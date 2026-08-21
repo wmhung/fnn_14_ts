@@ -102,15 +102,8 @@ export default async function Page() {
               <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
             </Link>
 
-            {/* One-click demo — only for logged-out visitors */}
+            {/* One-click demo for logged-out visitors */}
             {!isLoggedIn && <DemoLoginButton />}
-
-            <Link
-              href='/about'
-              className='inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 ring-1 ring-gray-200 dark:ring-slate-600 px-6 py-3 rounded-lg font-medium shadow-sm transition'
-            >
-              Learn more
-            </Link>
           </div>
         </div>
       </section>

@@ -37,9 +37,9 @@ export default function DemoLoginButton() {
         type='button'
         onClick={run}
         disabled={busy}
-        className='group inline-flex items-center justify-center gap-2 border border-accent-500 text-accent-600 hover:bg-accent-500/10 hover:font-extrabold px-6 py-3 rounded-lg font-medium shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed dark:text-accent-400'
+        className='group inline-flex items-center justify-center gap-2 border border-accent-500 text-accent-600 hover:bg-accent-500/10 px-6 py-3 rounded-lg font-medium shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed dark:text-accent-400'
       >
-        {busy ? 'Signing in…' : 'Sign in as demo'}
+        {busy ? 'Signing in…' : 'Sign in as demo'}{' '}
         <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
       </button>
       {error && (
