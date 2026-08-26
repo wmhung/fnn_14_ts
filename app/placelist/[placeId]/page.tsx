@@ -1,12 +1,16 @@
-import { getPlace, getPlaceLists } from '@/app/_lib/data-service';
+import { getPlace as fetchPlace, getPlaceLists } from '@/app/_lib/data-service';
 import Place from '@/app/_components/Place';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import Spinner from '@/app/_components/Spinner';
 import { notFound } from 'next/navigation';
-import {auth} from '@/app/_lib/auth';
+import { auth } from '@/app/_lib/auth';
 import LoginMessage from '@/app/_components/LoginMessage';
 
 export const dynamic = 'force-dynamic';
+
+const getPlace = cache((id: Parameters<typeof fetchPlace>[0]) =>
+  fetchPlace(id),
+);
 
 export async function generateMetadata({ params }) {
   const place = await getPlace(params.placeId);
@@ -31,10 +35,9 @@ export default async function Page({ params }) {
   const place = await getPlace(params.placeId);
 
   if (!place) {
-    notFound(); 
+    notFound();
   }
 
-  // Ownership check — don't leak other users' places
   if (place.email !== email) {
     notFound();
   }
