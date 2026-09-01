@@ -26,6 +26,11 @@ import StarDisplay from '../StarDisplay';
 import Loader from './Loader';
 // [NEW] "parks near me" (Overpass) — client helper + shared config/type
 import { fetchNearbyPois, NearbyError } from '../../_lib/services/overpass';
+// [NEW] AI place recommendation — client helper with retry + not-found fallback
+import {
+  fetchAiPlace,
+  AiRecommendError,
+} from '../../_lib/services/airecommend';
 import {
   POI_MARKER_COLOR,
   POI_DEDUPE_RADIUS_M,
@@ -94,8 +99,7 @@ const userPositionIcon = L.divIcon({
   iconAnchor: [11, 11],
 });
 
-// [NEW] Overpass POI candidate — green pin with a star badge, kept distinct
-// from blue (saved), gold (bookmarked), red (active), cyan (you-are-here).
+//  Overpass POI candidate
 const poiIcon = L.divIcon({
   className: '',
   html: `
@@ -116,13 +120,7 @@ export default function Map() {
     places: Place[];
     currentPlace: Place | null;
   };
-
-  // Single source of truth: BookmarkContext exposes a Set<number> of
-  // bookmarked place_ids. No local useMemo needed.
   const { bookmarkedPlaceIds } = useBookmarks();
-
-  // [NEW] Current user's email — dedupe candidates only against THIS user's
-  // saved places, while the map still renders everyone's markers.
   const { data: session } = useSession();
   const myEmail = session?.user?.email ?? null;
 
@@ -130,7 +128,7 @@ export default function Map() {
     isLoading: isLoadingPosition,
     position: geolocationPosition,
     getPosition,
-    error: locationError, // [NEW] surfaced so a denied/failed fix can't hang the POI loader
+    error: locationError, // surfaced so a denied/failed fix can't hang the POI loader
     route, // active travel route set by the Distance tab
   } = useLocation();
 
@@ -143,23 +141,25 @@ export default function Map() {
   const [submittedQuestion, setSubmittedQuestion] = useState<string | null>(
     null,
   );
+  // AI recommendation fallback message.
+  const [aiMessage, setAiMessage] = useState<{
+    kind: 'not_found' | 'retry';
+    text: string;
+  } | null>(null);
+  const lastAiQueryRef = useRef<string>('');
   const [activePlaceId, setActivePlaceId] = useState<number | null>(null);
   const [mode, setMode] = useState<Mode>('manual');
   const router = useRouter();
   const mapRef = useRef<L.Map | null>(null);
   const pendingFlyToRef = useRef<[number, number] | null>(null);
 
-  // [NEW] "parks near me" (Overpass) state
+  // "parks near me" (Overpass) state
   const [pois, setPois] = useState<Poi[]>([]);
   const [isLoadingPois, setIsLoadingPois] = useState<boolean>(false);
   const [poiError, setPoiError] = useState<string | null>(null);
-  // Coordinate-quantization guard: skip refetch if we haven't meaningfully moved.
   const lastPoiKeyRef = useRef<string | null>(null);
-  // Ref mirror of `pois` so runNearby's guard reads the latest value even when
-  // invoked from an effect closure (avoids a stale `pois.length` read).
+
   const poisRef = useRef<Poi[]>([]);
-  // Set when the button is tapped before a GPS fix exists — triggers the fetch
-  // once LocationContext delivers a position (without hijacking the locate flow).
   const pendingNearbyRef = useRef<boolean>(false);
 
   const pickIcon = (placeId: number) => {
@@ -202,13 +202,7 @@ export default function Map() {
     setHasClicked(true);
   }
 
-  // [NEW] Drop candidates that coincide with a place the user already saved, so
-  // discovery never duplicates their own pins. Uses real haversine distance
-  // (< POI_DEDUPE_RADIUS_M) rather than coordinate rounding — rounding fails at
-  // grid boundaries (two points ~5m apart can round to different cells).
-  // Scoped to THIS user's places (`p.email === myEmail`) so other users' pins
-  // still show on the map but never suppress a candidate. Supabase returns
-  // coords as strings, so coerce with Number().
+  // Drop candidates that coincide with a place the user already saved
   function dedupeAgainstSaved(found: Poi[]): Poi[] {
     if (!myEmail) return found; // no session yet → don't hide anything
     const saved = (Array.isArray(places) ? places : [])
@@ -229,7 +223,7 @@ export default function Map() {
     );
   }
 
-  // [NEW] Fetch nearby parks for a given point (via the /api/overpass proxy).
+  //  Fetch nearby parks for a given point (via the /api/overpass proxy).
   async function runNearby(lat: number, lng: number): Promise<void> {
     const key = `${lat.toFixed(3)},${lng.toFixed(3)}`;
     // Quantization guard: same spot + we already have results → reuse them.
@@ -258,19 +252,14 @@ export default function Map() {
     }
   }
 
-  // [NEW] "Find parks near me" button. Uses the current position if we have one;
-  // otherwise requests a fix and defers the fetch to the effect below.
+  //  "Find parks near me" button.
   function handleFindNearby() {
     enterManualMode();
-    // Defensive: make sure a dangling GPS-button click (hasClicked) can't
-    // hijack this position resolution into a form-navigation instead of a
-    // parks search — see the effect below for the full explanation.
+
     setHasClicked(false);
     if (geolocationPosition?.lat && geolocationPosition?.lng) {
       runNearby(geolocationPosition.lat, geolocationPosition.lng);
     } else {
-      // Show the loading state while we wait for the GPS fix so the button
-      // disables and gives feedback. Cleared by runNearby or the error effect.
       setIsLoadingPois(true);
       setPoiError(null);
       pendingNearbyRef.current = true;
@@ -295,14 +284,7 @@ export default function Map() {
       mapRef.current
     ) {
       const { lat, lng } = geolocationPosition;
-      // BUGFIX (2026-07-02): hasClicked was never reset after firing, so it
-      // stayed `true` for the rest of the page session. Once getPosition()
-      // started retrying transient CoreLocation failures (see LocationContext
-      // fix), a *later*, unrelated getPosition() call — e.g. from the
-      // "Search Parks" button — could resolve and re-trigger this effect,
-      // silently redirecting the user into the Add Place form instead of
-      // showing nearby parks. Consume the flag the instant it fires so it
-      // can only ever drive one navigation per GPS-button click.
+
       setHasClicked(false);
       mapRef.current?.flyTo([lat, lng], 15, {
         animate: true,
@@ -312,14 +294,10 @@ export default function Map() {
     }
   }, [geolocationPosition, hasClicked]);
 
-  // [NEW] Keep poisRef in sync so runNearby's guard never reads a stale count.
   useEffect(() => {
     poisRef.current = pois;
   }, [pois]);
 
-  // [NEW] When "Find parks near me" was tapped before a fix existed, run the
-  // Overpass fetch as soon as the position lands. Guarded so it doesn't collide
-  // with the locate-to-form flow above (that one requires `hasClicked`).
   useEffect(() => {
     if (
       pendingNearbyRef.current &&
@@ -329,11 +307,8 @@ export default function Map() {
       pendingNearbyRef.current = false;
       runNearby(geolocationPosition.lat, geolocationPosition.lng);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geolocationPosition]);
 
-  // [NEW] If geolocation fails/denied while a nearby fetch is pending, don't
-  // leave the loader stuck — clear it and surface a soft message.
   useEffect(() => {
     if (pendingNearbyRef.current && locationError) {
       pendingNearbyRef.current = false;
@@ -365,8 +340,7 @@ export default function Map() {
           });
         }
       }, 400);
-      // Clear the fallback if the effect re-runs (rapid clicks) or the
-      // component unmounts — prevents a stale flyTo from a previous place.
+
       return () => clearTimeout(fallback);
     }
   }, [currentPlace]);
@@ -407,19 +381,6 @@ export default function Map() {
     useEffect(() => {
       const container = map.getContainer();
 
-      // One-time correction: the map mounts via dynamic({ ssr:false }) inside a
-      // flex pane, so Leaflet often initializes before the container reaches its
-      // final width — leaving a broken, partial tile grid on first open. The
-      // ResizeObserver below only reacts to size *changes*, which can be missed
-      // on that first paint, so force an unconditional invalidateSize once the
-      // chunk + layout have settled.
-      //
-      // A setTimeout(0) fires on the next macrotask, which on a cold load can
-      // still run BEFORE the browser paints the final flex width (and before the
-      // web font/CSS reflow the box) — so Leaflet would recompute its tile grid
-      // against a still-wrong size and never request the missing tiles. Wait for
-      // layout + paint via a double requestAnimationFrame, then keep one delayed
-      // invalidateSize as a safety net for late font/CSS reflow.
       let raf1 = 0;
       let raf2 = 0;
       const safety = setTimeout(() => map.invalidateSize(), 250);
@@ -449,24 +410,47 @@ export default function Map() {
     return null;
   };
 
-  async function handleSubmit(): Promise<void> {
-    if (!inputValue.trim()) return;
+  // Accepts an optional query so the "Try again" button can re-run the last one;
+  // the Enter key and GO button call it with no arg (reads the input).
+  async function handleSubmit(retryQuery?: string): Promise<void> {
+    const query = (retryQuery ?? inputValue).trim();
+    if (!query) return;
+    lastAiQueryRef.current = query;
     setLoading(true);
+    setAiMessage(null);
     try {
-      setSubmittedQuestion(inputValue);
+      setSubmittedQuestion(query);
       setInputValue('');
-      const res = await fetch('/api/openai/Coordinates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: inputValue }),
-      });
-      const data: AiMarker = await res.json();
-      if (data?.coordinates?.length === 2) {
-        setAiMarker(data);
+      const result = await fetchAiPlace(query);
+      if (result.kind === 'ok') {
+        setAiMarker({
+          coordinates: result.place.coordinates,
+          title: result.place.title,
+        });
         enterAiMode();
+      } else {
+        // 'not_found' — the place couldn't be resolved. Ask for a new one.
+        setAiMessage({
+          kind: 'not_found',
+          text: result.title
+            ? `Couldn't find “${result.title}”. Try a different place.`
+            : "Couldn't find that place. Try a different one.",
+        });
       }
     } catch (err) {
-      console.error('AI location fetch error:', err);
+      // 'BAD_REQUEST' → nudge for input; everything else → transient, offer retry.
+      if (err instanceof AiRecommendError && err.code === 'BAD_REQUEST') {
+        setAiMessage({
+          kind: 'not_found',
+          text: 'Please type a place to search for.',
+        });
+      } else {
+        console.error('AI location fetch error:', err);
+        setAiMessage({
+          kind: 'retry',
+          text: 'The recommendation service is busy — please try again in a moment.',
+        });
+      }
     } finally {
       setLoading(false);
       setInputValue('');
@@ -476,6 +460,7 @@ export default function Map() {
   function clearAiState() {
     setSubmittedQuestion(null);
     setAiMarker(null);
+    setAiMessage(null);
   }
 
   return (
@@ -653,7 +638,7 @@ export default function Map() {
           />
           <button
             type='button'
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             className='absolute top-1 bottom-1 right-2 px-3  bg-accent-600 text-slate-50 rounded-xl shadow-xl hover:text-accent-50 hover:bg-accent-300'
           >
             GO
@@ -661,7 +646,25 @@ export default function Map() {
         </div>
       </div>
 
-      {/* [NEW] Find parks near me — thumb-reachable at the bottom */}
+      {/* AI recommendation fallback */}
+      {aiMessage && (
+        <div className='absolute top-[5.5rem] left-0 w-full flex justify-center md:justify-start z-20'>
+          <div className='ml-[0.5rem] md:ml-[1rem] max-w-[24rem] text-sm bg-slate-800 text-slate-50 px-4 py-2 rounded-lg shadow-xl'>
+            {aiMessage.text}
+            {aiMessage.kind === 'retry' && (
+              <button
+                type='button'
+                onClick={() => handleSubmit(lastAiQueryRef.current)}
+                className='block mt-1 font-semibold text-accent-300 hover:underline'
+              >
+                Try again
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Find parks near me */}
       <div className='absolute bottom-24 md:bottom-5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2'>
         <button
           type='button'

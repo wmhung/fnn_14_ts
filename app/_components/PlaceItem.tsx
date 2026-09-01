@@ -75,8 +75,7 @@ function PlaceItem({ place }: PlaceItemProps) {
     if (!sessionEmail) return;
 
     try {
-      // Atomic RPC + optimistic flip in one call. The Set updates instantly,
-      // and rolls back if the RPC errors.
+      // Atomic RPC + optimistic flip in one call.
       await toggleBookmark(id, sessionEmail);
       router.refresh();
     } catch (error) {

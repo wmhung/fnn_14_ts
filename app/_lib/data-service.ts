@@ -34,12 +34,9 @@ export async function getPlace(id: number): Promise<Place | null> {
   return { ...place, user_name: user?.full_name ?? 'Anonymous' } as Place;
 }
 
-/////////////
 // REPEAT VISITS
 
-// Log a repeat visit. The insert + counter bump run atomically inside the
-// log_visit Postgres function (see supabase/log_visit.sql) so visit_count
-// can't drift. Returns the new total.
+// Log a repeat visit.
 export async function logVisit({
   placeId,
   email,
