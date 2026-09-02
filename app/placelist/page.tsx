@@ -8,7 +8,7 @@ export const metadata = {
   title: 'Place List',
 };
 
-const PAGE_SIZE = 8; // same as your data-service PAGE_SIZE
+const PAGE_SIZE = 8;
 
 export default async function Page({ searchParams }: any) {
   const session = await auth();

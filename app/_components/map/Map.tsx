@@ -24,9 +24,7 @@ import L from 'leaflet';
 import DetectClick from './DetectClick';
 import StarDisplay from '../StarDisplay';
 import Loader from './Loader';
-// [NEW] "parks near me" (Overpass) — client helper + shared config/type
 import { fetchNearbyPois, NearbyError } from '../../_lib/services/overpass';
-// [NEW] AI place recommendation — client helper with retry + not-found fallback
 import {
   fetchAiPlace,
   AiRecommendError,
@@ -267,8 +265,6 @@ export default function Map() {
     }
   }
 
-  // [NEW] Remove the green candidate markers and reset the quantization guard
-  // so the next search runs fresh. Used by the Clear button and after an Add.
   function clearPois() {
     setPois([]);
     setPoiError(null);
