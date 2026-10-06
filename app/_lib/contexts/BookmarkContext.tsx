@@ -128,7 +128,7 @@ function BookmarkProvider({ children }: { children: ReactNode }) {
 
   async function toggleBookmark(placeId: number, sessionEmail: string) {
     if (!sessionEmail) {
-      dispatch({ type: 'rejected', payload: 'Not signed in' });
+      dispatch({ type: 'rejected', payload: '尚未登入' });
       return;
     }
 

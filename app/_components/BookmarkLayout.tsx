@@ -28,7 +28,7 @@ export default function BookmarkLayout({
         {/* Tab switcher */}
         <div
           role='tablist'
-          aria-label='Bookmark panel sections'
+          aria-label='收藏面板區塊'
           className='flex border-b border-slate-300 mb-2 text-xs font-bold uppercase'
         >
           <button
@@ -42,7 +42,7 @@ export default function BookmarkLayout({
                 : 'text-slate-500 hover:text-accent-600'
             }`}
           >
-            Bookmarks
+            收藏清單
           </button>
           <button
             role='tab'
@@ -55,7 +55,7 @@ export default function BookmarkLayout({
                 : 'text-slate-500 hover:text-accent-600'
             }`}
           >
-            Distance
+            距離
           </button>
         </div>
 

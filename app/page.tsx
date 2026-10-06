@@ -5,8 +5,17 @@ import bg from '@/public/bg.png';
 import { auth } from '@/app/_lib/auth';
 import { PiParkDuotone } from 'react-icons/pi';
 import { BsBookmarkStarFill } from 'react-icons/bs';
-import { FaMapMarkedAlt, FaArrowRight } from 'react-icons/fa';
+import { FaMapMarkedAlt } from 'react-icons/fa';
 import DemoLoginButton from './_components/DemoLoginButton';
+import { Zen_Maru_Gothic } from 'next/font/google';
+
+// Rounded display font for the hero tagline + bottom CTA heading.
+// CJK font: no latin-only subset helps, so skip preload and let unicode-range load on demand.
+const zenMaru = Zen_Maru_Gothic({
+  weight: ['500', '700'],
+  preload: false,
+  display: 'swap',
+});
 
 type Feature = {
   Icon: React.ComponentType<{ className?: string }>;
@@ -22,26 +31,26 @@ const features: Feature[] = [
     iconWrap:
       'bg-emerald-50 ring-emerald-200 dark:bg-emerald-900/30 dark:ring-emerald-700',
     iconColor: 'text-emerald-500 dark:text-emerald-400',
-    title: 'Save places',
+    title: '儲存地點',
     description:
-      'Track parks, playgrounds, museums, and schools you visit with your kids. Add photos and notes to each.',
+      '凡走過必留下痕跡，不論任何景點，只要上傳照片和文字，就能留下美好回憶',
   },
   {
     Icon: FaMapMarkedAlt,
     iconWrap: 'bg-sky-50 ring-sky-200 dark:bg-sky-900/30 dark:ring-sky-700',
     iconColor: 'text-sky-500 dark:text-sky-400',
-    title: 'See your map',
+    title: '檢視你的地圖',
     description:
-      'Every place you save appears as a pin on your private map — a personal atlas of family memories.',
+      '您可以在地圖上看到造訪過的景點座標',
   },
   {
     Icon: BsBookmarkStarFill,
     iconWrap:
       'bg-amber-50 ring-amber-200 dark:bg-amber-900/30 dark:ring-amber-700',
     iconColor: 'text-amber-500 dark:text-amber-400',
-    title: 'Bookmark favourites',
+    title: '收藏最愛',
     description:
-      'Heart the spots your family loves most. They live in their own tab — always one tap away.',
+      '甚至是把全家最愛的景點加入收藏清單，一鍵即可輕鬆瀏覽全家人的回憶',
   },
 ];
 
@@ -89,8 +98,8 @@ export default async function Page() {
             </span>
           </h1>
 
-          <p className='text-base sm:text-lg text-gray-700 dark:text-slate-300 leading-relaxed max-w-xl mx-auto'>
-            Turn every family outing into a memory worth keeping on the map.
+          <p className={`${zenMaru.className} text-2xl sm:text-3xl text-gray-700 dark:text-slate-300 leading-relaxed max-w-xl mx-auto`}>
+            紀錄難忘的精彩時刻
           </p>
 
           <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-2'>
@@ -98,8 +107,7 @@ export default async function Page() {
               href={isLoggedIn ? '/placelist' : '/login'}
               className='group inline-flex items-center justify-center gap-2 bg-accent-600 hover:bg-accent-700 text-white px-6 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition'
             >
-              {isLoggedIn ? 'Open my places' : 'Get started'}
-              <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
+              {isLoggedIn ? '開啟我的景點' : '登入帳號'}
             </Link>
 
             {/* One-click demo for logged-out visitors */}
@@ -110,20 +118,9 @@ export default async function Page() {
 
       {/* ─────────── FEATURES ─────────── */}
       <section
-        aria-labelledby='features-title'
+        aria-label='功能介紹'
         className='max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16'
       >
-        <div className='text-center max-w-2xl mx-auto mb-10'>
-          <span className='inline-block text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider'>
-            What you can do
-          </span>
-          <h2
-            id='features-title'
-            className='mt-1 text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'
-          >
-            Everything you need to remember the trip
-          </h2>
-        </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6'>
           {features.map(({ Icon, iconWrap, iconColor, title, description }) => (
@@ -150,23 +147,15 @@ export default async function Page() {
       {/* ─────────── BOTTOM CTA ─────────── */}
       <section className='max-w-4xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16'>
         <div className='rounded-2xl bg-gradient-to-br from-accent-500 to-primary-600 px-6 sm:px-10 py-10 sm:py-12 text-center shadow-sm'>
-          <h2 className='text-2xl sm:text-3xl font-semibold text-white leading-tight'>
-            {isLoggedIn
-              ? 'Ready to add your next adventure?'
-              : 'Ready to map your family adventures?'}
+          <h2 className={`${zenMaru.className} text-2xl sm:text-3xl font-semibold text-white leading-tight`}>
+            準備好紀錄近期的旅程嗎？
           </h2>
-          <p className='mt-3 text-sm sm:text-base text-white/90 max-w-xl mx-auto leading-relaxed'>
-            {isLoggedIn
-              ? 'Jump back in and add the places you visited this week.'
-              : 'Free to start. No credit card. Sign up in under a minute and add your first place today.'}
-          </p>
           <div className='mt-6 flex justify-center'>
             <Link
               href={isLoggedIn ? '/placelist' : '/register'}
               className='group inline-flex items-center gap-2 bg-white text-accent-700 hover:bg-gray-50 px-6 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition'
             >
-              {isLoggedIn ? 'Open my places' : 'Create your account'}
-              <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
+              {isLoggedIn ? '開啟我的景點' : '建立帳號'}
             </Link>
           </div>
         </div>

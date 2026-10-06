@@ -15,7 +15,7 @@ test('an authenticated user can reach the "Log a visit" action on a place', asyn
 
   // Auth gate passed: the sign-in prompt is gone.
   await expect(
-    page.getByText(/sign in to discover, save, and explore places on the map/i),
+    page.getByText(/登入以在地圖上發現、儲存並探索地點/),
   ).toHaveCount(0);
 
   // Open the first saved place's detail page (PlaceItem links to
@@ -28,8 +28,8 @@ test('an authenticated user can reach the "Log a visit" action on a place', asyn
   await expect(page).toHaveURL(/\/placelist\/\d+/);
 
   // The journey reaches the action point. VisitsSection labels the button by
-  // visit count: "📌 Log your first visit" when empty, "＋ Log a visit" otherwise.
+  // visit count: 「記錄你的第一次造訪」 when empty, 「＋ 記錄造訪」 otherwise.
   await expect(
-    page.getByRole('button', { name: /log (a|your first) visit/i }),
+    page.getByRole('button', { name: /記錄(你的第一次)?造訪/ }),
   ).toBeVisible();
 });

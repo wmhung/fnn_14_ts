@@ -12,17 +12,17 @@ const SEEN_KEY = 'fnn_guest_tour_seen';
 const STEPS: DriveStep[] = [
   {
     popover: {
-      title: '👋 Welcome to FNN',
+      title: '歡迎來到 FNN',
       description:
-        'A 60-second tour of Finding Next Neverland — a family park tracker. Hit Next, or close anytime.',
+        '60 秒帶您認識 Finding Next Neverland，點選「下一步」或隨時關閉。',
     },
   },
   {
     element: '[data-tour="find-parks"]',
     popover: {
-      title: '🌳 Find parks near you',
+      title: '尋找附近的公園',
       description:
-        'Pulls real parks & playgrounds around your current position.',
+        '點擊按鈕，立即搜尋半徑 500 公尺內的公園 → 選取公園，並新增景點 → 填寫資料送出 → 成功新增景點',
       side: 'top',
       align: 'center',
     },
@@ -30,9 +30,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="map"]',
     popover: {
-      title: '🗺️ The map',
+      title: '地圖',
       description:
-        'Everything renders here. Tap a green pin to save a found park, or click anywhere to drop your own place.',
+        '所有景點座標都會顯示在地圖上：<br/>1. 藍色：座標預設顏色<br/>2. 紅色：當前選取的座標<br/>3. 金色：在您收藏清單內的座標',
       side: 'left',
       align: 'center',
     },
@@ -40,9 +40,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="place-card"]',
     popover: {
-      title: '📍 Your saved places',
+      title: '你儲存的地點',
       description:
-        'Open one for full details, a walking route, and its visit history — and to log a repeat visit.',
+        '左側的「景點清單」可瀏覽、編輯、刪除已新增的景點，或者將景點收藏在「收藏清單」，方便瀏覽精彩時刻。',
       side: 'right',
       align: 'start',
     },
@@ -50,16 +50,16 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="bookmark"]',
     popover: {
-      title: '⭐ One-click favourite',
-      description: 'Toggling a bookmark and the pin turns gold.',
+      title: '一鍵收藏',
+      description: '點選書籤圖示，即可將景點收藏至「收藏清單」',
       side: 'right',
       align: 'start',
     },
   },
   {
     popover: {
-      title: '🚀 That’s the tour',
-      description: 'Enjoy exploring!',
+      title: '導覽結束',
+      description: '盡情探索吧！',
     },
   },
 ];
@@ -83,9 +83,10 @@ export default function GuestTour({ email }: { email?: string | null }) {
       allowClose: true,
       overlayColor: 'rgba(2, 6, 23, 0.6)',
       popoverClass: 'fnn-tour-popover',
-      nextBtnText: 'Next →',
-      prevBtnText: '← Back',
-      doneBtnText: 'Done',
+      nextBtnText: '下一步 →',
+      prevBtnText: '← 上一步',
+      doneBtnText: '完成',
+      progressText: '{{current}} / {{total}}',
       steps,
     }).drive();
   }, []);
@@ -139,7 +140,7 @@ export default function GuestTour({ email }: { email?: string | null }) {
       onClick={startTour}
       className='fixed bottom-5 left-5 z-[60] rounded-full border border-accent-500 bg-white/90 px-4 py-2 text-sm font-semibold text-accent-600 shadow-lg backdrop-blur transition hover:bg-accent-500/10 dark:bg-slate-900/90 dark:text-accent-400'
     >
-      ？ Take the tour
+      使用說明
     </button>
   );
 }

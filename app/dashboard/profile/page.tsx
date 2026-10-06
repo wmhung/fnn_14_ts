@@ -5,7 +5,7 @@ import type { UpdateUser } from '@/types/user';
 import LoginMessage from '@/app/_components/LoginMessage';
 
 export const metadata = {
-  title: 'Update profile',
+  title: '更新個人資料',
 };
 
 export default async function Page() {
@@ -19,7 +19,7 @@ export default async function Page() {
   if (!user) {
     return (
       <div className='mx-auto my-auto'>
-        <h1 className='flex mb-3 justify-center text-2xl'>User not found</h1>
+        <h1 className='flex mb-3 justify-center text-2xl'>找不到使用者</h1>
       </div>
     );
   }
@@ -42,7 +42,9 @@ export default async function Page() {
   return (
     <div className='w-full mx-auto my-auto px-3 sm:px-6 py-4 sm:py-6'>
       <h1 className='flex mb-4 sm:mb-6 justify-center text-xl sm:text-2xl font-semibold'>
-        Update your profile
+        <span className='bg-gradient-to-r from-accent-500 to-primary-500 bg-clip-text text-transparent'>
+          會員資料
+        </span>
       </h1>
 
       <UpdateProfileForm user={updateUser} provider={provider} />

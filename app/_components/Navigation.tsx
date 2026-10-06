@@ -18,7 +18,7 @@ export default async function Navigation() {
             className='relative inline-block after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-slate-800 after:scale-x-0 after:origin-right after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.19,1,0.22,1)] hover:after:scale-x-100 hover:after:origin-left hover:after:duration-[500ms]
             dark:after:bg-slate-50'
           >
-            About
+            關於我們
           </Link>
         </li>
         <li>
@@ -27,7 +27,7 @@ export default async function Navigation() {
             className='relative inline-block after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-slate-800 after:scale-x-0 after:origin-right after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.19,1,0.22,1)] hover:after:scale-x-100 hover:after:origin-left hover:after:duration-[500ms]
             dark:after:bg-slate-50'
           >
-            Support
+            支援
           </Link>
         </li>
         <li>
@@ -38,7 +38,7 @@ export default async function Navigation() {
               className='relative inline-block after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-slate-800  after:scale-x-0 after:origin-right after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.19,1,0.22,1)] hover:after:scale-x-100 hover:after:origin-left hover:after:duration-[500ms]
               dark:after:bg-slate-50'
             >
-              Login / Sign up
+              登入／註冊
             </Link>
           ) : session.user.provider === 'google' ||
             session.user.provider === 'github' ? (

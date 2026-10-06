@@ -10,7 +10,7 @@ describe('LogVisitModal', () => {
       <LogVisitModal placeName="Da'an Park" onClose={vi.fn()} onSubmit={onSubmit} />,
     );
 
-    const save = screen.getByRole('button', { name: /save/i });
+    const save = screen.getByRole('button', { name: /儲存/ });
     expect(save).toBeDisabled();
 
     // StarRating renders each star as <span role="button"> (no text label),

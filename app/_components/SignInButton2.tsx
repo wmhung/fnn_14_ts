@@ -10,12 +10,12 @@ function SignInButton2() {
       >
         <Image
           src='https://authjs.dev/img/providers/github.svg'
-          alt='GitHub logo'
+          alt='GitHub 標誌'
           height='20'
           width='20'
           className='dark:invert'
         />
-        <span>Continue with GitHub</span>
+        <span>使用 GitHub 繼續</span>
       </button>
     </form>
   );

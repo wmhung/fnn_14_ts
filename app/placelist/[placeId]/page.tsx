@@ -15,7 +15,7 @@ const getPlace = cache((id: Parameters<typeof fetchPlace>[0]) =>
 export async function generateMetadata({ params }) {
   const place = await getPlace(params.placeId);
   return {
-    title: place?.place_name ? `Place ${place.place_name}` : 'Place Detail',
+    title: place?.place_name ? `地點 ${place.place_name}` : '地點詳情',
   };
 }
 

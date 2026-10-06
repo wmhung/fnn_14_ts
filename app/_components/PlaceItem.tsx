@@ -44,7 +44,7 @@ function PlaceItem({ place }: PlaceItemProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!window.confirm(`Delete "${placeName}"? This cannot be undone.`)) {
+    if (!window.confirm(`確定要刪除「${placeName}」嗎？此操作無法復原。`)) {
       return;
     }
 
@@ -114,7 +114,7 @@ function PlaceItem({ place }: PlaceItemProps) {
           <button
             data-tour='bookmark'
             onClick={handleToggleBookmark}
-            aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+            aria-label={isBookmarked ? '移除收藏' : '加入收藏'}
             className='p-1 -m-1 cursor-pointer'
           >
             <IoBookmark
@@ -127,7 +127,7 @@ function PlaceItem({ place }: PlaceItemProps) {
 
           <button
             onClick={handleEdit}
-            aria-label='Edit place'
+            aria-label='編輯地點'
             className='p-1 -m-1 cursor-pointer'
           >
             <MdEdit
@@ -138,7 +138,7 @@ function PlaceItem({ place }: PlaceItemProps) {
 
           <button
             onClick={handleDelete}
-            aria-label='Delete place'
+            aria-label='刪除地點'
             className='p-1 -m-1 cursor-pointer'
           >
             <MdDeleteForever

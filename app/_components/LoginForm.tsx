@@ -51,7 +51,7 @@ function LoginForm() {
       }
     } catch (error) {
       console.error('Unexpected login error:', error);
-      setFormError('An unexpected error occurred.');
+      setFormError('發生未預期的錯誤。');
     }
   };
 
@@ -92,7 +92,7 @@ function LoginForm() {
         {/* EMAIL */}
         <div>
           <label htmlFor='email' className={labelClass}>
-            Email
+            電子郵件
           </label>
           <input
             id='email'
@@ -112,13 +112,13 @@ function LoginForm() {
               htmlFor='password'
               className='block text-sm font-medium text-gray-700 dark:text-slate-200'
             >
-              Password
+              密碼
             </label>
             <Link
               href='/forgot-password'
               className='text-xs font-medium text-accent-600 hover:underline dark:text-accent-400'
             >
-              Forgot password?
+              忘記密碼？
             </Link>
           </div>
           <input
@@ -140,7 +140,7 @@ function LoginForm() {
           disabled={isSubmitting}
           className='w-full px-6 py-2.5 rounded-lg font-medium bg-accent-600 text-white hover:bg-accent-700 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition'
         >
-          {isSubmitting ? 'Signing in...' : 'Continue with email'}
+          {isSubmitting ? '登入中...' : '使用電子郵件繼續'}
         </button>
 
         {/* DEMO ACCESS — one-click guest login (no signup) */}
@@ -150,10 +150,10 @@ function LoginForm() {
           disabled={demoBusy || isSubmitting}
           className='w-full px-6 py-2.5 rounded-lg font-medium border border-accent-500 text-accent-600 hover:bg-accent-500/10 hover:font-extrabold disabled:opacity-60 disabled:cursor-not-allowed transition dark:text-accent-400'
         >
-          {demoBusy ? 'Filling demo credentials…' : 'Sign in as demo'}
+          {demoBusy ? '正在填入訪客帳號…' : '訪客帳號登入'}
         </button>
         <p className='text-xs text-center text-gray-500 dark:text-slate-400'>
-          Guest account · no signup needed
+          訪客帳號 · 無需註冊
         </p>
       </form>
 
@@ -164,7 +164,7 @@ function LoginForm() {
         </div>
         <div className='relative flex justify-center'>
           <span className='bg-white dark:bg-slate-900 px-2 text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wider'>
-            or continue with
+            使用第三方帳號登入
           </span>
         </div>
       </div>
@@ -177,12 +177,12 @@ function LoginForm() {
 
       {/* FOOTER */}
       <p className='text-sm text-center text-gray-600 dark:text-slate-400'>
-        Don&apos;t have an account?{' '}
+        還沒有帳號嗎？{' '}
         <Link
           href='/register'
           className='font-medium text-accent-600 hover:underline dark:text-accent-400'
         >
-          Sign up
+          註冊
         </Link>
       </p>
     </div>

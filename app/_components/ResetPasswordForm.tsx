@@ -64,13 +64,13 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         {/* NEW PASSWORD */}
         <div>
           <label htmlFor='password' className={labelClass}>
-            New password
+            新密碼
           </label>
           <input
             id='password'
             className={inputClass}
             type='password'
-            placeholder='At least 8 characters'
+            placeholder='至少 8 個字元'
             autoComplete='new-password'
             {...register('password')}
           />
@@ -82,13 +82,13 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         {/* CONFIRM PASSWORD */}
         <div>
           <label htmlFor='confirmPassword' className={labelClass}>
-            Confirm new password
+            確認新密碼
           </label>
           <input
             id='confirmPassword'
             className={inputClass}
             type='password'
-            placeholder='Re-enter password'
+            placeholder='再次輸入密碼'
             autoComplete='new-password'
             {...register('confirmPassword')}
           />
@@ -105,18 +105,17 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           disabled={isSubmitting}
           className='w-full px-6 py-2.5 rounded-lg font-medium bg-primary-700 text-white hover:bg-primary-800 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition'
         >
-          {isSubmitting ? 'Updating...' : 'Set new password'}
+          {isSubmitting ? '更新中...' : '設定新密碼'}
         </button>
       </form>
 
       {/* FOOTER */}
       <p className='text-sm text-center text-gray-600 dark:text-slate-400'>
-        Changed your mind?{' '}
         <Link
           href='/login'
           className='font-medium text-accent-600 hover:underline dark:text-accent-400'
         >
-          Back to sign in
+          返回登入
         </Link>
       </p>
     </div>

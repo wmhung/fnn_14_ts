@@ -8,13 +8,13 @@ import VisitsSection from './VisitsSection';
 
 const formatDate = (date) =>
   date
-    ? new Intl.DateTimeFormat('en', {
+    ? new Intl.DateTimeFormat('zh-TW', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
         weekday: 'long',
       }).format(new Date(date))
-    : 'Unknown date';
+    : '日期不明';
 
 const formatDateToGoogle = (dateStr) => {
   // Formats date to UTC format: YYYYMMDDTHHmmssZ
@@ -65,10 +65,10 @@ function Place({ place }) {
   } = place;
 
   const calendarLink = createGoogleCalendarLink({
-    title: `Visit ${placeName}`,
+    title: `造訪 ${placeName}`,
     startDate: date,
     endDate: date,
-    details: `Let's visit ${placeName} located in ${dist}. ${notes || ''}`,
+    details: `一起去位於${dist}的${placeName}吧！${notes || ''}`,
     location: `${placeName}, ${dist}`,
   });
 
@@ -79,7 +79,7 @@ function Place({ place }) {
         <Image
           className='rounded-tl-lg rounded-tr-lg object-cover'
           src={image || '/placeholder.jpg'}
-          alt={`Photo of ${placeName}`}
+          alt={`${placeName} 的照片`}
           fill
           quality={75}
           sizes='100vw'
@@ -89,51 +89,51 @@ function Place({ place }) {
 
       {/* Info Sections */}
       <div className='overflow-y-scroll overflow-x-hidden pb-6'>
-        <InfoBlock title='District Name'>{dist || 'Unknown'}</InfoBlock>
-        <InfoBlock title='Place Name'>{placeName || 'Unnamed Place'}</InfoBlock>
+        <InfoBlock title='行政區'>{dist || '不明'}</InfoBlock>
+        <InfoBlock title='地點名稱'>{placeName || '未命名地點'}</InfoBlock>
 
         {/* Repeat-visit count + "Log a visit" (card modal) */}
         <VisitsSection
           placeId={id}
-          placeName={placeName || 'this place'}
+          placeName={placeName || '這個地點'}
           dist={dist}
           initialCount={visitCount ?? 0}
         />
 
-        <InfoBlock title={`When did we first visit ${placeName}?`}>
+        <InfoBlock title={`我們第一次造訪${placeName}是什麼時候？`}>
           {formatDate(date)}
         </InfoBlock>
-        <InfoBlock title='Ratings'>
+        <InfoBlock title='評分'>
           {[...Array(Number(starRating || 0))].map((_, i) => (
             <span key={i}>⭐️</span>
           ))}
         </InfoBlock>
-        <InfoBlock title='Did we have fun?'>
-          {notes || 'No notes recorded.'}
+        <InfoBlock title='我們玩得開心嗎？'>
+          {notes || '沒有筆記紀錄。'}
         </InfoBlock>
-        <InfoBlock title='Recreation facilities'>
-          {recreation || 'Not specified.'}
+        <InfoBlock title='休閒設施'>
+          {recreation || '未指定。'}
         </InfoBlock>
-        <InfoBlock title='Learn more'>
+        <InfoBlock title='了解更多'>
           <Link
             href={`https://zh.wikipedia.org/zh-tw/${placeName}`}
             target='_blank'
             rel='noopener noreferrer'
             className='text-blue-600 dark:text-accent-600 hover:underline'
           >
-            Check out {placeName} on Wikipedia
+            在維基百科查看 {placeName}
           </Link>
         </InfoBlock>
 
         {/* Add to Google Calendar */}
-        <InfoBlock title='Add to Calendar'>
+        <InfoBlock title='加入行事曆'>
           <Link
             href={calendarLink}
             target='_blank'
             rel='noopener noreferrer'
             className='text-blue-600 dark:text-accent-600 hover:underline'
           >
-            Add this visit to your Google Calendar
+            將這次造訪加入 Google 日曆
           </Link>
         </InfoBlock>
 

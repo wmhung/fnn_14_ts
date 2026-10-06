@@ -5,7 +5,7 @@ import LoginMessage from '../_components/LoginMessage';
 
 export const revalidate = 0;
 export const metadata = {
-  title: 'Place List',
+  title: '景點清單',
 };
 
 const PAGE_SIZE = 8;

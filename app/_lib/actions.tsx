@@ -45,7 +45,7 @@ export async function signOutAction() {
 // update password data
 export async function updatePassword(formData: FormData) {
   const session = await auth();
-  if (!session) throw new Error('You must be logged in');
+  if (!session) throw new Error('你必須先登入');
 
   const parsed = updatePasswordSchema.safeParse({
     password: formData.get('password'),
@@ -65,7 +65,7 @@ export async function updatePassword(formData: FormData) {
     .update([{ password: hashedPassword }])
     .eq('email', session.user.email);
 
-  if (error) throw new Error('Profile could not be updated');
+  if (error) throw new Error('無法更新個人資料');
 
   console.log('Update password successfully!');
   redirect('/login');
@@ -74,7 +74,7 @@ export async function updatePassword(formData: FormData) {
 export async function updateUser(prevState: any, formData: FormData) {
   const session = await auth();
   if (!session?.user?.email) {
-    return { error: 'You must be logged in' }; // [FIX] return, not throw
+    return { error: '你必須先登入' }; // [FIX] return, not throw
   }
 
   // OAuth users' avatar is owned by the provider (Google/GitHub) and is
@@ -90,7 +90,7 @@ export async function updateUser(prevState: any, formData: FormData) {
     gender: formData.get('gender'),
   });
   if (!parsed.success) {
-    return { error: 'Invalid profile value' };
+    return { error: '個人資料數值無效' };
   }
   const numOfKids = parsed.data.num_of_kids ?? '';
   const gender = parsed.data.gender ?? '';
@@ -116,7 +116,7 @@ export async function updateUser(prevState: any, formData: FormData) {
     const { error: storageError } = await supabase.storage
       .from('avatar')
       .upload(avatarName, avatarFile, { cacheControl: '3600', upsert: true });
-    if (storageError) return { error: 'Avatar upload failed' };
+    if (storageError) return { error: '大頭貼上傳失敗' };
     updateData.avatar = avatarPath;
   }
 
@@ -157,15 +157,15 @@ export async function login(
     return { success: true };
   } catch (error) {
     if (error instanceof CouldNotParseError) {
-      return { error: 'Invalid input format.' };
+      return { error: '輸入格式無效。' };
     }
     if (error instanceof UserNotFoundError) {
-      return { error: 'This email is not registered.' };
+      return { error: '此電子郵件尚未註冊。' };
     }
     if (error instanceof InvalidPasswordError) {
-      return { error: 'Incorrect password.' };
+      return { error: '密碼錯誤。' };
     }
-    return { error: 'Something went wrong. Please try again.' };
+    return { error: '發生錯誤，請再試一次。' };
   }
 }
 
@@ -198,7 +198,7 @@ export async function register(
       .single();
 
     if (existingUser) {
-      return { error: 'User already exists' };
+      return { error: '此使用者已存在' };
     }
 
     const hashedPassword = await hash(password, 12);
@@ -219,7 +219,7 @@ export async function register(
     console.log('[register] AFTER upload', uploadError);
 
     if (uploadError) {
-      return { error: 'Failed to upload default avatar' };
+      return { error: '預設大頭貼上傳失敗' };
     }
 
     // Build the URL explicitly — guarantees /public/ regardless of SDK version
@@ -242,7 +242,7 @@ export async function register(
     console.log('User created successfully!');
     return {}; // let client handle redirect
   } catch (err: any) {
-    return { error: err.message || 'Something went wrong' };
+    return { error: err.message || '發生錯誤' };
   }
 }
 
@@ -342,7 +342,7 @@ export async function resetPassword(
     .single();
 
   if (!row || row.used_at || new Date(row.expires_at) < new Date()) {
-    return { error: 'This link is invalid or has expired.' };
+    return { error: '此連結無效或已過期。' };
   }
 
   const hashedPassword = await hash(password, 12);
@@ -352,7 +352,7 @@ export async function resetPassword(
     .update({ password: hashedPassword })
     .eq('id', row.user_id);
 
-  if (updateErr) return { error: 'Could not update password.' };
+  if (updateErr) return { error: '無法更新密碼。' };
 
   await supabaseAdmin // was supabase
     .from('password_reset_token')

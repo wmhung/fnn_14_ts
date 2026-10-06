@@ -10,7 +10,7 @@ function Logo() {
         src={logo}
         width='80'
         quality={100}
-        alt='finding neverland logo'
+        alt='Finding Neverland 標誌'
         priority
       />
     </Link>

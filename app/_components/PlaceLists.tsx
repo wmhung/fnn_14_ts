@@ -34,7 +34,7 @@ export default function PlaceLists() {
   if (!sortedPlaces.length) {
     return (
       <div className='flex items-center justify-center w-full xs:max-h-[42vh] max-h-[63vh] mx-1 my-2 border shadow-sm rounded-lg text-slate-500 text-center inset-shadow text-xl'>
-        <p>Start by clicking the map to add your first place!</p>
+        <p>點選地圖，新增你的第一個地點吧！</p>
       </div>
     );
   }

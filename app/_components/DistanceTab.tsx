@@ -23,11 +23,11 @@ interface DistanceResult {
 function warningFor(reason: unknown): string {
   if (reason instanceof RoutingError) {
     if (reason.code === 'NO_ROUTE')
-      return 'No route found — showing straight-line distance.';
+      return '找不到路線——改為顯示直線距離。';
     if (reason.code === 'NOT_CONFIGURED')
-      return 'Routing service is not configured — showing straight-line distance.';
+      return '路線服務尚未設定——改為顯示直線距離。';
   }
-  return 'Routing service unavailable — showing straight-line distance.';
+  return '路線服務無法使用——改為顯示直線距離。';
 }
 
 export default function DistanceTab() {
@@ -121,7 +121,7 @@ export default function DistanceTab() {
       <section>
         <div className='flex items-center justify-between mb-1'>
           <span className='font-bold uppercase text-xs text-slate-500'>
-            Step 1 · My location
+            步驟 1 · 我的位置
           </span>
           {position && (
             <button
@@ -130,7 +130,7 @@ export default function DistanceTab() {
               type='button'
               disabled={locLoading}
             >
-              {locLoading ? 'Updating…' : 'Refresh'}
+              {locLoading ? '更新中…' : '重新整理'}
             </button>
           )}
         </div>
@@ -147,7 +147,7 @@ export default function DistanceTab() {
             className='w-full flex items-center justify-center gap-2 rounded-md bg-accent-600 text-slate-50 py-2 hover:bg-accent-500 disabled:opacity-60'
           >
             <BiSolidNavigation className='w-4 h-4' />
-            {locLoading ? 'Locating…' : 'Get my location'}
+            {locLoading ? '定位中…' : '取得我的位置'}
           </button>
         )}
 
@@ -160,7 +160,7 @@ export default function DistanceTab() {
           htmlFor='distance-bookmark'
           className='block font-bold uppercase text-xs text-slate-500 mb-1'
         >
-          Step 2 · Choose a bookmark
+          步驟 2 · 選擇收藏
         </label>
         <select
           id='distance-bookmark'
@@ -173,7 +173,7 @@ export default function DistanceTab() {
           disabled={!routableBookmarks.length}
           className='w-full rounded-md border border-slate-300 bg-slate-50 dark:bg-slate-700 dark:text-slate-50 px-2 py-2 disabled:opacity-60'
         >
-          <option value=''>— Select —</option>
+          <option value=''>— 請選擇 —</option>
           {routableBookmarks.map((b) => (
             <option key={b.id} value={String(b.id)}>
               {b.place_name}
@@ -182,7 +182,7 @@ export default function DistanceTab() {
         </select>
         {!routableBookmarks.length && (
           <p className='mt-1 text-xs text-slate-500'>
-            You have no bookmarks with saved coordinates yet.
+            你還沒有含座標的收藏。
           </p>
         )}
       </section>
@@ -195,7 +195,7 @@ export default function DistanceTab() {
           disabled={!canCalculate}
           className='flex-1 rounded-md bg-accent-600 text-slate-50 py-2 hover:bg-accent-500 disabled:opacity-60'
         >
-          {isCalculating ? 'Calculating…' : 'Calculate'}
+          {isCalculating ? '計算中…' : '計算'}
         </button>
         {result && (
           <button
@@ -203,7 +203,7 @@ export default function DistanceTab() {
             onClick={handleReset}
             className='rounded-md border border-slate-300 px-3 hover:bg-slate-100 dark:hover:bg-slate-700'
           >
-            Clear
+            清除
           </button>
         )}
       </section>
@@ -218,7 +218,7 @@ export default function DistanceTab() {
           }`}
         >
           <div className='text-xs uppercase text-slate-500 mb-2'>
-            From you to <strong>{selected?.place_name}</strong>
+            從你的位置到 <strong>{selected?.place_name}</strong>
           </div>
 
           {/* Haversine fallback view (both modes failed) */}
@@ -227,7 +227,7 @@ export default function DistanceTab() {
               <div className='text-lg font-bold'>
                 {formatDistance(result.approxKm)}
                 <span className='ml-2 text-xs font-normal text-slate-500'>
-                  (approx)
+                  （約略）
                 </span>
               </div>
               {result.warning && (
@@ -246,7 +246,7 @@ export default function DistanceTab() {
                 {formatDistance(result.walking.distanceKm)}
               </span>
               <span className='text-slate-600 dark:text-slate-300'>
-                · ~{Math.round(result.walking.durationMin)} min
+                · 約 {Math.round(result.walking.durationMin)} 分鐘
               </span>
             </div>
           )}
@@ -257,7 +257,7 @@ export default function DistanceTab() {
                 {formatDistance(result.driving.distanceKm)}
               </span>
               <span className='text-slate-600 dark:text-slate-300'>
-                · ~{Math.round(result.driving.durationMin)} min
+                · 約 {Math.round(result.driving.durationMin)} 分鐘
               </span>
             </div>
           )}
@@ -266,7 +266,7 @@ export default function DistanceTab() {
           {hasBothModes && (
             <div className='mt-3'>
               <div className='text-xs uppercase text-slate-500 mb-1'>
-                Show on map
+                在地圖上顯示
               </div>
               <div className='flex gap-2'>
                 <button
@@ -278,7 +278,7 @@ export default function DistanceTab() {
                       : 'border border-slate-300 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
                   }`}
                 >
-                  <FaWalking className='w-3 h-3' /> Walking
+                  <FaWalking className='w-3 h-3' /> 步行
                 </button>
                 <button
                   type='button'
@@ -289,7 +289,7 @@ export default function DistanceTab() {
                       : 'border border-slate-300 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
                   }`}
                 >
-                  <FaCar className='w-3 h-3' /> Driving
+                  <FaCar className='w-3 h-3' /> 開車
                 </button>
               </div>
             </div>

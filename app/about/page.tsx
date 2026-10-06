@@ -1,17 +1,17 @@
 import Image from 'next/image';
 import image1 from '@/public/image1.png';
 import Link from 'next/link';
-import { FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
 
 export const metadata = {
-  title: 'About',
+  title: '關於',
 };
 
 const features = [
-  'Interactive map',
-  'Upload photos',
-  "See others' ratings",
-  'Share your comments',
+  '互動式地圖',
+  '上傳照片、文字',
+  '瀏覽其他景點評分',
+  '分享您的評論',
 ];
 
 export default function Page() {
@@ -45,31 +45,23 @@ export default function Page() {
         />
 
         <div className='relative max-w-3xl mx-auto text-center space-y-6'>
-          <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
-            About
-          </span>
-
           <h1
             id='about-title'
             className='text-3xl sm:text-4xl md:text-5xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'
           >
-            Our story
+            <span className='bg-gradient-to-r from-accent-500 to-primary-500 bg-clip-text text-transparent'>
+              我們的故事
+            </span>
           </h1>
 
           <p className='text-base sm:text-lg text-gray-700 dark:text-slate-300 leading-relaxed'>
             <strong className='text-gray-900 dark:text-slate-100 font-semibold'>
               Finding Next Neverland
             </strong>{' '}
-            is a web application designed for parents to track and document the
-            places they visit with their children. Whether it&apos;s a park,
-            museum, playground, or any other fun spot, we help families record
-            their experiences and build a personal map of memorable outings.
+            是一款專為家長設計的網頁應用程式，用來記錄親子出遊的精彩時刻。幾張照片和文字，就能打造專屬您一家人的出遊地圖。
           </p>
 
           <div>
-            <h2 className='text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3'>
-              Key features
-            </h2>
             <ul className='grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto text-left'>
               {features.map((feature) => (
                 <li
@@ -88,8 +80,7 @@ export default function Page() {
               href='/placelist'
               className='group inline-flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-primary-50 px-6 py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition'
             >
-              Start exploring
-              <FaArrowRight className='w-3.5 h-3.5 transition group-hover:translate-x-0.5' />
+              開始探索
             </Link>
           </div>
         </div>

@@ -43,13 +43,13 @@ export default function Search() {
   return (
     <div className='relative flex flex-shrink-0 text-sm ml-2'>
       <label htmlFor='search' className='sr-only'>
-        Search
+        搜尋
       </label>
       <input
         className={`peer block ${
           isFocused ? 'max-w-[9rem]' : 'max-w-[3rem]'
         } transition-all duration-300 mr-2 rounded-md inset-shadow-2xs border border-1 border-slate-300 bg-transparent py-2 pl-10 outline-accent-600 placeholder:text-gray-500`}
-        placeholder={isFocused ? 'Search' : ''}
+        placeholder={isFocused ? '搜尋' : ''}
         ref={inputRef}
         onFocus={() => setIsFocused(true)}
         onChange={(e) => {

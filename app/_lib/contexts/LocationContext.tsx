@@ -77,7 +77,7 @@ function LocationProvider({ children }: { children: ReactNode }) {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
       dispatch({
         type: 'position/failed',
-        payload: 'Your browser does not support geolocation',
+        payload: '你的瀏覽器不支援定位功能',
       });
       return;
     }
@@ -94,7 +94,16 @@ function LocationProvider({ children }: { children: ReactNode }) {
         });
       },
       (err) => {
-        dispatch({ type: 'position/failed', payload: err.message });
+        // zh-Hant message by GeolocationPositionError code; fall back to the browser text
+        const GEO_ERROR_ZH: Record<number, string> = {
+          1: '定位權限遭拒，請在瀏覽器中允許存取位置。',
+          2: '目前無法取得位置資訊。',
+          3: '定位逾時，請再試一次。',
+        };
+        dispatch({
+          type: 'position/failed',
+          payload: GEO_ERROR_ZH[err.code] ?? err.message,
+        });
       },
     );
   }, []);

@@ -42,7 +42,7 @@ export default function BookmarkList() {
   if (!sortedBookmarks.length) {
     return (
       <div className='flex items-center justify-center w-full xs:max-h-[42vh] max-h-[63vh] mx-1 my-2 border shadow-sm rounded-lg text-slate-500 text-center inset-shadow text-xl'>
-        <p>There is no data in your bookmark list, yet!</p>
+        <p>你的收藏清單目前還沒有資料！</p>
       </div>
     );
   }

@@ -32,7 +32,7 @@ export default function NaviDropdown2({ fullName, avatar }) {
         <div className='w-10 h-10 rounded-full overflow-hidden relative'>
           <Image
             src={avatar}
-            alt='user icon'
+            alt='使用者圖示'
             fill
             className='object-cover'
             referrerPolicy='no-referrer'
@@ -40,7 +40,7 @@ export default function NaviDropdown2({ fullName, avatar }) {
           />
         </div>
         <span className='relative inline-block after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-neutral-700 after:scale-x-0 after:origin-right after:transition-transform after:duration-[600ms] after:ease-[cubic-bezier(0.19,1,0.22,1)] hover:after:scale-x-100 hover:after:origin-left hover:after:duration-[500ms] [word-spacing:0.5rem] dark:after:bg-slate-50'>
-          {fullName}&#39;s account
+          {fullName}，您好！
         </span>
       </button>
 
@@ -60,7 +60,7 @@ export default function NaviDropdown2({ fullName, avatar }) {
                 onClick={() => setOpen(false)}
                 className='flex justify-end px-12 py-2 hover:font-black hover:text-2xl transition-all duration-300'
               >
-                <p>Dashboard</p>
+                <p>管理後台</p>
               </Link>
             </li>
             <li>
@@ -69,7 +69,7 @@ export default function NaviDropdown2({ fullName, avatar }) {
                 onClick={() => setOpen(false)}
                 className='flex justify-end px-12 py-2 hover:font-black hover:text-2xl transition-all duration-300'
               >
-                <p>Profile</p>
+                <p>會員資料</p>
               </Link>
             </li>
             <li>
@@ -78,7 +78,7 @@ export default function NaviDropdown2({ fullName, avatar }) {
                 onClick={() => setOpen(false)}
                 className='flex justify-end px-12 py-2 hover:font-black hover:text-2xl transition-all duration-300'
               >
-                <p>Credentials</p>
+                <p>更新密碼</p>
               </Link>
             </li>
             <div className='flex justify-end mt-5 px-12'>

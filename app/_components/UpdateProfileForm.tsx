@@ -99,7 +99,7 @@ export default function UpdateProfileForm({
           className='flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200'
         >
           <FaCheckCircle className='shrink-0' />
-          <span>Profile updated successfully.</span>
+          <span>個人資料已更新成功。</span>
         </div>
       )}
 
@@ -116,55 +116,55 @@ export default function UpdateProfileForm({
 
       {/* ACCOUNT INFO — read-only */}
       <section className='space-y-3'>
-        <h2 className={sectionHeaderClass}>Account info</h2>
+        <h2 className={sectionHeaderClass}>帳號資訊</h2>
 
         <div className='divide-y divide-gray-100 dark:divide-slate-700 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 px-4'>
-          <ReadOnlyRow label='User role' value={role} />
-          <ReadOnlyRow label='Full name' value={fullName} />
-          <ReadOnlyRow label='Email address' value={email} />
+          <ReadOnlyRow label='使用者角色' value={role} />
+          <ReadOnlyRow label='姓名' value={fullName} />
+          <ReadOnlyRow label='電子郵件地址' value={email} />
         </div>
       </section>
 
       {/* ABOUT YOU — editable */}
       <section className='space-y-4'>
-        <h2 className={sectionHeaderClass}>About you</h2>
+        <h2 className={sectionHeaderClass}>關於你</h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div>
             <label htmlFor='num_of_kids' className={labelClass}>
-              Number of kids
+              孩子人數
             </label>
             <SelectWithChevron
               id='num_of_kids'
               name='num_of_kids'
               defaultValue={numOfKids?.toString() ?? ''}
             >
-              <option value=''>Select...</option>
+              <option value=''>請選擇...</option>
               <option value='1'>1</option>
               <option value='2'>2</option>
               <option value='3'>3</option>
-              <option value='over3'>Over 3</option>
+              <option value='over3'>超過 3 位</option>
             </SelectWithChevron>
             <p className={helperClass}>
-              Helps us recommend family-friendly places.
+              協助我們推薦適合親子的地點。
             </p>
           </div>
 
           <div>
             <label htmlFor='gender' className={labelClass}>
-              Gender
+              性別
             </label>
             <SelectWithChevron
               id='gender'
               name='gender'
               defaultValue={gender ?? ''}
             >
-              <option value=''>Select...</option>
-              <option value='male'>Male</option>
-              <option value='female'>Female</option>
+              <option value=''>請選擇...</option>
+              <option value='male'>男</option>
+              <option value='female'>女</option>
             </SelectWithChevron>
             <p className={helperClass}>
-              Optional. Used only for personalisation.
+              選填，僅用於個人化設定。
             </p>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function UpdateProfileForm({
 
       {/* AVATAR */}
       <section className='space-y-4'>
-        <h2 className={sectionHeaderClass}>Avatar</h2>
+        <h2 className={sectionHeaderClass}>大頭貼</h2>
 
         <div className='flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5'>
           {isOAuth ? (
@@ -182,7 +182,7 @@ export default function UpdateProfileForm({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatarPreview}
-                  alt='Profile photo'
+                  alt='個人照片'
                   referrerPolicy='no-referrer'
                   className='h-full w-full object-cover'
                 />
@@ -195,14 +195,14 @@ export default function UpdateProfileForm({
             <button
               type='button'
               onClick={() => fileInputRef.current?.click()}
-              aria-label='Change avatar'
+              aria-label='更換大頭貼'
               className='group relative shrink-0 self-center sm:self-auto h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-slate-700 hover:ring-primary-500 focus:ring-primary-500 focus:outline-none transition flex items-center justify-center bg-gray-100 dark:bg-slate-800'
             >
               {avatarPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={avatarPreview}
-                  alt='Avatar preview'
+                  alt='大頭貼預覽'
                   className='h-full w-full object-cover'
                 />
               ) : (
@@ -210,24 +210,23 @@ export default function UpdateProfileForm({
               )}
               <span className='absolute inset-0 flex items-center justify-center gap-1 text-xs font-medium text-white bg-black/50 opacity-0 group-hover:opacity-100 transition'>
                 <FaCamera />
-                Change
+                更換
               </span>
             </button>
           )}
 
           <div className='text-center sm:text-left'>
             <p className='text-sm font-medium text-gray-900 dark:text-slate-100'>
-              Profile photo
+              個人照片
             </p>
             {isOAuth ? (
               <p className={helperClass}>
-                Your photo is managed by your {providerLabel} account and
-                can&apos;t be changed here.
+                你的照片由 {providerLabel} 帳號管理，無法在此變更。
               </p>
             ) : (
               <>
                 <p className={helperClass}>
-                  Tap the circle to upload. PNG or JPEG, up to{' '}
+                  點選圓圈上傳照片。PNG 或 JPEG，最大{' '}
                   {MAX_AVATAR_LABEL}.
                 </p>
                 {avatarError && (
@@ -255,10 +254,10 @@ export default function UpdateProfileForm({
       {/* ACTION BAR */}
       <div className='flex justify-center sm:justify-end items-center pt-4 border-t border-gray-100 dark:border-slate-700'>
         <SubmitButton
-          pendingLabel='Updating...'
+          pendingLabel='更新中...'
           className='w-full sm:w-auto px-6 py-2.5 font-medium'
         >
-          {state?.success ? 'Done' : 'Save changes'}
+          {state?.success ? '完成' : '儲存變更'}
         </SubmitButton>
       </div>
     </form>

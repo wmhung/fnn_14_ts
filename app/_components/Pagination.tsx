@@ -36,11 +36,11 @@ function Pagination({ count }) {
     <div className='max-w-[28rem] flex flex-col items-center mx-auto mt-2 md:m-2 text-sm sm:text-base'>
       <div className='hidden sm:flex'>
         <p>
-          Showing <span>{(currentPage - 1) * PAGE_SIZE + 1}</span> to{' '}
+          顯示第 <span>{(currentPage - 1) * PAGE_SIZE + 1}</span> 至{' '}
           <span>
             {currentPage === pageCount ? count : currentPage * PAGE_SIZE}
           </span>{' '}
-          of <span>{count}</span> results
+          筆，共 <span>{count}</span> 筆結果
         </p>
       </div>
 
@@ -51,7 +51,7 @@ function Pagination({ count }) {
           disabled={currentPage === 1}
         >
           <HiChevronLeft />
-          <span>Previous</span>
+          <span>上一頁</span>
         </button>
 
         <button
@@ -59,7 +59,7 @@ function Pagination({ count }) {
           onClick={nextPage}
           disabled={currentPage === pageCount}
         >
-          <span>Next</span>
+          <span>下一頁</span>
           <HiChevronRight />
         </button>
       </div>

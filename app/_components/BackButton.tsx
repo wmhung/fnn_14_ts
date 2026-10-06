@@ -6,7 +6,7 @@ function BackButton() {
       href='/placelist'
       className='w-fit text-slate-50 bg-slate-500 hover:bg-slate-300'
     >
-      Back
+      返回
     </Button>
   );
 }

@@ -8,7 +8,7 @@ export const revalidate = 0;
 export const dynamic = 'force-dynamic'; // ✅ force dynamic rendering
 
 export const metadata = {
-  title: 'Bookmark',
+  title: '收藏清單',
 };
 
 export default async function Page({ searchParams }) {

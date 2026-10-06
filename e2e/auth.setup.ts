@@ -12,9 +12,9 @@ setup('authenticate', async ({ page }) => {
   }
 
   await page.goto('/login');
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Continue with email' }).click();
+  await page.getByLabel('電子郵件').fill(email);
+  await page.getByLabel('密碼').fill(password);
+  await page.getByRole('button', { name: '使用電子郵件繼續' }).click();
 
   // On success LoginForm does window.location.href = '/'.
   await page.waitForURL('http://localhost:3000/');

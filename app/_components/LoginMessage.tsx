@@ -34,10 +34,10 @@ function LoginMessage() {
         {/* Text */}
         <div className='flex flex-col gap-2'>
           <h2 className='text-xl text-slate-800 dark:text-slate-50'>
-            Find your next neverland
+            尋找你的下一個夢幻島
           </h2>
           <p className='text-sm text-slate-500 dark:text-slate-400 leading-relaxed'>
-            Sign in to discover, save, and explore places on the map.
+            登入以在地圖上發現、儲存並探索地點。
           </p>
         </div>
 
@@ -46,7 +46,7 @@ function LoginMessage() {
           href='/login'
           className='flex items-center gap-2 px-6 py-2.5 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors duration-200'
         >
-          Sign in
+          登入
         </Link>
       </div>
     </div>

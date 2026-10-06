@@ -49,7 +49,7 @@ function SignupForm() {
         router.push('/'); // redirect client-side after success
       }
     } catch (error: any) {
-      setFormError(error.message || 'Something went wrong');
+      setFormError(error.message || '發生錯誤');
     }
   };
 
@@ -70,13 +70,13 @@ function SignupForm() {
         {/* FULL NAME */}
         <div>
           <label htmlFor='full_name' className={labelClass}>
-            Full name
+            姓名
           </label>
           <input
             id='full_name'
             className={inputClass}
             type='text'
-            placeholder='Jhon Doe'
+            placeholder='王小明'
             autoComplete='name'
             {...register('full_name')}
           />
@@ -88,7 +88,7 @@ function SignupForm() {
         {/* EMAIL */}
         <div>
           <label htmlFor='email' className={labelClass}>
-            Email
+            電子郵件
           </label>
           <input
             id='email'
@@ -104,13 +104,13 @@ function SignupForm() {
         {/* PASSWORD */}
         <div>
           <label htmlFor='password' className={labelClass}>
-            Password
+            密碼
           </label>
           <input
             id='password'
             className={inputClass}
             type='password'
-            placeholder='At least 8 characters'
+            placeholder='至少 8 個字元'
             autoComplete='new-password'
             {...register('password')}
           />
@@ -122,13 +122,13 @@ function SignupForm() {
         {/* CONFIRM PASSWORD */}
         <div>
           <label htmlFor='confirmPassword' className={labelClass}>
-            Confirm password
+            確認密碼
           </label>
           <input
             id='confirmPassword'
             className={inputClass}
             type='password'
-            placeholder='Re-enter password'
+            placeholder='再次輸入密碼'
             autoComplete='new-password'
             {...register('confirmPassword')}
           />
@@ -143,18 +143,18 @@ function SignupForm() {
           disabled={isSubmitting}
           className='w-full px-6 py-2.5 rounded-lg font-medium bg-primary-700 text-white hover:bg-primary-800 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition'
         >
-          {isSubmitting ? 'Creating account...' : 'Create account'}
+          {isSubmitting ? '建立帳號中...' : '建立帳號'}
         </button>
       </form>
 
       {/* FOOTER */}
       <p className='text-sm text-center text-gray-600 dark:text-slate-400'>
-        Already have an account?{' '}
+        已經有帳號了？{' '}
         <Link
           href='/login'
           className='font-medium text-accent-600 hover:underline dark:text-accent-400'
         >
-          Sign in
+          登入
         </Link>
       </p>
     </div>

@@ -1,18 +1,17 @@
 import SignupForm from '../_components/SignupForm';
 
 export const metadata = {
-  title: 'Register',
+  title: '註冊',
 };
 
 export default async function Page() {
   return (
     <div className='w-full max-w-md mx-auto px-4 sm:px-6 py-8 sm:py-12'>
       <div className='text-center mb-8'>
-        <span className='inline-block text-xs font-semibold text-accent-600 dark:text-accent-400 uppercase tracking-wider'>
-          Get started
-        </span>
         <h1 className='mt-1 text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-slate-100 leading-tight'>
-          Create your account
+          <span className='bg-gradient-to-r from-accent-500 to-primary-500 bg-clip-text text-transparent'>
+            建立帳號
+          </span>
         </h1>
       </div>
       <SignupForm />

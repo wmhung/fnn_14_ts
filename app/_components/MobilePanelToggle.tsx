@@ -15,28 +15,28 @@ function MobilePanelToggle() {
         onClick={() => setView('list')}
       >
         <GiParkBench className='mx-auto my-2 w-7 h-7' />
-        <p className='mx-auto my-1 text-xs font-extrabold'>Place List</p>
+        <p className='mx-auto my-1 text-xs font-extrabold'>景點清單</p>
       </button>
       <button
         className='w-20 mx-auto text-slate-700 dark:text-slate-50 font-bold'
         onClick={() => setView(null)}
       >
         <RxCross2 className='mx-auto my-2 w-7 h-7' />
-        <p className='mx-auto my-1 text-xs font-extrabold'>Close</p>
+        <p className='mx-auto my-1 text-xs font-extrabold'>關閉</p>
       </button>
       <button
         className='w-20 mx-auto text-slate-700 dark:text-slate-50 font-bold'
         onClick={() => setView('bookmarks')}
       >
         <BsBookmarkCheck className='mx-auto my-2 w-7 h-7' />
-        <p className='mx-auto my-1 text-xs font-extrabold'>Bookmarks</p>
+        <p className='mx-auto my-1 text-xs font-extrabold'>收藏清單</p>
       </button>
       <button
         className='w-20 mx-auto text-slate-700 dark:text-slate-50 font-bold'
         onClick={() => setView('distance')}
       >
         <FaRoute className='mx-auto my-2 w-7 h-7' />
-        <p className='mx-auto my-1 text-xs font-extrabold'>Distance</p>
+        <p className='mx-auto my-1 text-xs font-extrabold'>距離</p>
       </button>
     </div>
   );

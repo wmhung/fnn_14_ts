@@ -21,7 +21,7 @@ function AppNavClient() {
                   : ' hover:bg-accent-600 hover:text-slate-50'
               }`}
             >
-              Place List
+              景點清單
             </Link>
           </li>
           <li className='flex' dir='rtl'>
@@ -33,7 +33,7 @@ function AppNavClient() {
                   : '  hover:bg-accent-600 hover:text-slate-50'
               }`}
             >
-              Bookmarks
+              收藏清單
             </Link>
           </li>
         </ul>

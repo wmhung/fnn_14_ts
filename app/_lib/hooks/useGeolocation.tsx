@@ -7,7 +7,7 @@ export function useGeolocation(defaultPosition = null) {
 
   function getPosition() {
     if (!navigator.geolocation) {
-      setError('Your browser does not support geolocation');
+      setError('你的瀏覽器不支援定位功能');
       return;
     }
 

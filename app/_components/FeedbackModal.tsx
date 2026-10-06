@@ -25,17 +25,17 @@ function FeedbackModal({ onClose, onSubmit }) {
     <div className='fixed inset-0 bg-black bg-opacity-50 z-[10010] flex items-center justify-center px-4'>
       <div className='bg-slate-50 w-full max-w-sm rounded-2xl p-6 shadow-lg flex flex-col items-center gap-4'>
         <h2 className='text-xl font-bold text-gray-800'>
-          Enjoying the experience?
+          喜歡這次的使用體驗嗎？
         </h2>
         <p className='text-gray-600 text-center'>
-          Rate and tell us what you think!
+          給個評分，告訴我們你的想法！
         </p>
 
         <StarRating maxRating={5} size={30} onSetRating={setRating} />
 
         <textarea
           className='w-full h-24 border border-gray-300 rounded-lg p-3 text-sm resize-none'
-          placeholder='Write your thoughts here...'
+          placeholder='在這裡寫下你的想法...'
           value={review}
           onChange={(e) => setReview(e.target.value)}
         />
@@ -46,14 +46,14 @@ function FeedbackModal({ onClose, onSubmit }) {
             className='flex-1 py-2 rounded-lg border border-gray-300 text-gray-600'
             disabled={isSubmitting}
           >
-            Cancel
+            取消
           </button>
           <button
             onClick={handleSubmit}
             className='flex-1 py-2 rounded-lg bg-accent-600 text-slate-50 font-semibold'
             disabled={isSubmitting || !rating || !review}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit'}
+            {isSubmitting ? '送出中...' : '送出'}
           </button>
         </div>
       </div>

@@ -85,7 +85,7 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
         <div className='flex items-center gap-3'>
           <button
             onClick={handleRemove}
-            aria-label='Remove bookmark'
+            aria-label='移除收藏'
             className='p-1 -m-1 cursor-pointer'
           >
             <IoBookmark

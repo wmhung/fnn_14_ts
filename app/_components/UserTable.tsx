@@ -45,7 +45,7 @@ function RoleBadge({ role }: { role: User['role'] }) {
 function YouChip() {
   return (
     <span className='text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'>
-      You
+      你
     </span>
   );
 }
@@ -76,10 +76,9 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
         {/* HEADER */}
         <div className='flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-slate-700'>
           <div>
-            <h2 className={sectionHeaderClass}>Members</h2>
+            <h2 className={sectionHeaderClass}>成員</h2>
             <p className='text-sm text-gray-500 dark:text-slate-400 mt-1'>
-              {userList.length} {userList.length === 1 ? 'member' : 'members'}{' '}
-              total
+              共 {userList.length} 位成員
             </p>
           </div>
         </div>
@@ -87,7 +86,7 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
         {/* EMPTY STATE */}
         {userList.length === 0 && (
           <div className='py-12 text-center text-sm text-gray-500 dark:text-slate-400'>
-            No members found.
+            找不到成員。
           </div>
         )}
 
@@ -100,8 +99,8 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
                   user.role === 'owner' || user.email === currentUserEmail;
                 const lockReason =
                   user.role === 'owner'
-                    ? 'Owner role is locked'
-                    : 'You cannot change your own role';
+                    ? '擁有者角色已鎖定'
+                    : '你無法變更自己的角色';
 
                 return (
                   <li key={user.id} className='p-4 sm:p-5 space-y-3'>
@@ -117,7 +116,7 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
                           {user.email}
                         </p>
                         <p className='text-xs text-gray-400 dark:text-slate-500 mt-1'>
-                          Joined{' '}
+                          加入於{' '}
                           {new Date(user.created_at).toLocaleDateString()}
                         </p>
                       </div>
@@ -139,7 +138,7 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
                           ) : (
                             <BsToggleOff className='w-6 h-6 text-gray-400' />
                           )}
-                          Make {user.role === 'admin' ? 'user' : 'admin'}
+                          設為{user.role === 'admin' ? '一般使用者' : '管理員'}
                         </button>
                       )}
                     </div>
@@ -153,11 +152,11 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
               <table className='min-w-full text-sm'>
                 <thead className='bg-gray-50 dark:bg-slate-800 sticky top-0 z-10'>
                   <tr>
-                    <th className={thClass}>Name</th>
-                    <th className={thClass}>Email</th>
-                    <th className={thClass}>Role</th>
-                    <th className={thClass}>Joined</th>
-                    <th className={`${thClass} text-right`}>Toggle</th>
+                    <th className={thClass}>姓名</th>
+                    <th className={thClass}>電子郵件</th>
+                    <th className={thClass}>角色</th>
+                    <th className={thClass}>加入日期</th>
+                    <th className={`${thClass} text-right`}>切換</th>
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-100 dark:divide-slate-700'>
@@ -166,8 +165,8 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
                       user.role === 'owner' || user.email === currentUserEmail;
                     const lockReason =
                       user.role === 'owner'
-                        ? 'Owner role is locked'
-                        : 'You cannot change your own role';
+                        ? '擁有者角色已鎖定'
+                        : '你無法變更自己的角色';
 
                     return (
                       <tr
@@ -204,8 +203,8 @@ export default function UserTable({ users, currentUserEmail }: UserTableProps) {
                               onClick={() =>
                                 handleToggle(user.email, user.role)
                               }
-                              title={`Make ${
-                                user.role === 'admin' ? 'user' : 'admin'
+                              title={`設為${
+                                user.role === 'admin' ? '一般使用者' : '管理員'
                               }`}
                               className='inline-flex items-center hover:opacity-80 transition'
                             >

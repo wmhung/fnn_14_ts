@@ -6,10 +6,10 @@ test('unauthenticated visit to /placelist shows the sign-in prompt', async ({
   await page.goto('/placelist');
 
   await expect(
-    page.getByRole('heading', { name: /find your next neverland/i }),
+    page.getByRole('heading', { name: /尋找你的下一個夢幻島/ }),
   ).toBeVisible();
 
   await expect(
-    page.getByText(/sign in to discover, save, and explore places on the map/i),
+    page.getByText(/登入以在地圖上發現、儲存並探索地點/),
   ).toBeVisible();
 });

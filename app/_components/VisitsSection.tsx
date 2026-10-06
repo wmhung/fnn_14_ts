@@ -31,7 +31,7 @@ export default function VisitsSection({
   async function handleSubmit({ rating, note, visitedAt }: LogVisitData) {
     const email = session?.user?.email;
     if (!email) {
-      setErrorMsg('You must be logged in to log a visit.');
+      setErrorMsg('請先登入才能記錄造訪。');
       return;
     }
 
@@ -49,14 +49,14 @@ export default function VisitsSection({
       router.refresh(); // re-pull the place so other views stay in sync
     } catch (err: any) {
       console.error('Failed to log visit:', err.message);
-      setErrorMsg('Could not log the visit. Please try again.');
+      setErrorMsg('無法記錄造訪，請再試一次。');
     }
   }
 
   return (
     <div className='mx-5 my-2'>
       <h2 className='my-1 text-slate-400 text-sm uppercase dark:text-slate-500'>
-        Visits
+        造訪紀錄
       </h2>
 
       <div className='flex items-center justify-between flex-wrap gap-2'>
@@ -66,11 +66,11 @@ export default function VisitsSection({
             onClick={() => setShowModal(true)}
             className='inline-flex items-center gap-2 rounded-full bg-accent-600 text-slate-50 font-bold text-sm px-3 py-1.5'
           >
-            📌 Log your first visit
+            記錄你的第一次造訪
           </button>
         ) : (
           <span className='inline-flex items-center gap-2 rounded-full bg-accent-50 text-accent-700 border border-accent-200 font-bold text-sm px-3 py-1.5'>
-            🔁 {count} {count === 1 ? 'visit' : 'visits'}
+            {count} 次造訪
           </span>
         )}
 
@@ -80,7 +80,7 @@ export default function VisitsSection({
             onClick={() => setShowModal(true)}
             className='inline-flex items-center gap-1 rounded-lg bg-accent-600 text-slate-50 font-bold text-sm px-3 py-2'
           >
-            ＋ Log a visit
+            ＋ 記錄造訪
           </button>
         )}
       </div>

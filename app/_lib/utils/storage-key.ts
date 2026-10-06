@@ -36,11 +36,11 @@ export function buildStorageKey(mimeType: string): string | null {
 /** Human-readable rejection reason, or null when the file is fine. */
 export function validateImage(file: File, maxBytes: number): string | null {
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-    return 'Image must be a PNG or JPEG file.';
+    return '圖片必須是 PNG 或 JPEG 檔案。';
   }
   if (file.size > maxBytes) {
     const mb = (file.size / 1024 / 1024).toFixed(1);
-    return `Image is ${mb} MB — the limit is ${(maxBytes / 1024 / 1024).toFixed(0)} MB.`;
+    return `圖片大小為 ${mb} MB——上限為 ${(maxBytes / 1024 / 1024).toFixed(0)} MB。`;
   }
   return null;
 }

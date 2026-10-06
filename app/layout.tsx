@@ -12,16 +12,16 @@ export const metadata = {
   // page title, `%s` can show the current page title of meta data
   title: {
     template: '%s | Finding Next Neverland',
-    default: 'Welcome | Finding Next Neverland',
+    default: '歡迎 | Finding Next Neverland',
   },
   // website description for seo
-  description: 'Explore new places and have fun with your kids.',
+  description: '探索新地點，和孩子一起玩得開心。',
 };
 
 export default async function RootLayout({ children }) {
   const session = await auth();
   return (
-    <html lang='en' className='mx-0' suppressHydrationWarning>
+    <html lang='zh-Hant' className='mx-0' suppressHydrationWarning>
       <head>
         {/* Inject dark mode preference script */}
         <ThemeScript />

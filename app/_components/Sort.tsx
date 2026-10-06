@@ -6,10 +6,10 @@ import { ChevronDown } from 'lucide-react';
 import { MdOutlineSort } from 'react-icons/md';
 
 const sortOptions = [
-  { label: 'Recent First', value: 'date-desc' },
-  { label: 'Earlier First', value: 'date-asc' },
-  { label: 'Highest Rating', value: 'rating-desc' },
-  { label: 'Lowest Rating', value: 'rating-asc' },
+  { label: '最新優先', value: 'date-desc' },
+  { label: '最早優先', value: 'date-asc' },
+  { label: '評分最高', value: 'rating-desc' },
+  { label: '評分最低', value: 'rating-asc' },
 ];
 
 function Sort() {

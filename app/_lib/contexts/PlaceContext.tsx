@@ -142,7 +142,7 @@ function PlaceProvider({ children }: { children: ReactNode }) {
     if (!imageName) {
       dispatch({
         type: 'rejected',
-        payload: 'Image must be a PNG or JPEG file.',
+        payload: '圖片必須是 PNG 或 JPEG 檔案。',
       });
       return null;
     }
@@ -230,7 +230,7 @@ function PlaceProvider({ children }: { children: ReactNode }) {
 
   async function deletePlace(id: number, email: string) {
     if (!email) {
-      dispatch({ type: 'rejected', payload: 'Not signed in' });
+      dispatch({ type: 'rejected', payload: '尚未登入' });
       return;
     }
 

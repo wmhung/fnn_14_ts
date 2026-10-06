@@ -61,9 +61,9 @@ export default function BurgerMenu() {
             </div>
 
             {[
-              { href: '/', label: 'Home' },
-              { href: '/about', label: 'About' },
-              { href: '/support', label: 'Support' },
+              { href: '/', label: '首頁' },
+              { href: '/about', label: '關於我們' },
+              { href: '/support', label: '支援' },
             ].map(({ href, label }) => (
               <li key={href}>
                 <Link
@@ -82,8 +82,8 @@ export default function BurgerMenu() {
                   <div className='w-[80%] border-t-[1px] border-slate-400'></div>
                 </div>
                 {[
-                  { href: '/login', label: 'Login' },
-                  { href: '/register', label: 'Sign up' },
+                  { href: '/login', label: '登入' },
+                  { href: '/register', label: '註冊' },
                 ].map(({ href, label }) => (
                   <li key={href}>
                     <Link
@@ -101,10 +101,10 @@ export default function BurgerMenu() {
             {user && (
               <>
                 {[
-                  { href: '/dashboard', label: 'Dashboard' },
-                  { href: '/dashboard/profile', label: 'Profile' },
+                  { href: '/dashboard', label: '管理後台' },
+                  { href: '/dashboard/profile', label: '會員資料' },
                   ...(isCredentials
-                    ? [{ href: '/dashboard/credentials', label: 'Credentials' }]
+                    ? [{ href: '/dashboard/credentials', label: '更新密碼' }]
                     : []),
                 ].map(({ href, label }) => (
                   <li key={href}>

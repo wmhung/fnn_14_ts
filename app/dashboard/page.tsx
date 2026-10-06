@@ -18,7 +18,7 @@ import UserTable from '../_components/UserTable';
 
 // page title
 export const metadata = {
-  title: 'Dashboard',
+  title: '儀表板',
 };
 
 // Helper to calculate average
@@ -83,8 +83,8 @@ export default async function Page() {
       {session?.user?.email ? (
         <div className='mx-auto'>
           <h1 className='flex justify-start items-center my-8 px-2 text-xl'>
-            Hi, {name || userName}.{' '}
-            {role === 'owner' ? 'All users have...' : 'You have...'}
+            嗨，{name || userName}。{' '}
+            {role === 'owner' ? '所有使用者共有...' : '你目前有...'}
           </h1>
 
           <div className='grid grid-cols-2 gap-4 xs:grid-cols-4 xs:gap-3 2xs:gap-2 px-2 max-w-[60rem] mx-auto'>
@@ -94,7 +94,7 @@ export default async function Page() {
                 {count}
               </p>
               <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
-                place{plural} visited
+                個已造訪地點
               </p>
             </div>
             <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-amber-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-amber-500'>
@@ -103,7 +103,7 @@ export default async function Page() {
                 {count_2}
               </p>
               <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
-                bookmark{plural} saved
+                個已儲存收藏
               </p>
             </div>
             <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-sky-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-sky-500'>
@@ -112,7 +112,7 @@ export default async function Page() {
                 {count_3}
               </p>
               <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
-                photo{plural} uploaded
+                張已上傳照片
               </p>
             </div>
             <div className='flex flex-col items-center text-center py-5 px-3 rounded-xl shadow-md bg-white border-t-4 border-rose-400 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 dark:bg-slate-800 dark:ring-1 dark:ring-slate-700 dark:shadow-none dark:hover:ring-slate-600 dark:border-rose-500'>
@@ -121,7 +121,7 @@ export default async function Page() {
                 {avgRatingRounded}
               </p>
               <p className='mt-2 text-[0.7rem] uppercase tracking-wider text-gray-500 dark:text-slate-400'>
-                {role === 'owner' ? 'avg app rating' : 'avg place rating'}
+                {role === 'owner' ? 'App 平均評分' : '地點平均評分'}
               </p>
             </div>
           </div>

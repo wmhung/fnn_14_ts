@@ -13,7 +13,7 @@ interface EditPageProps {
 }
 
 export const metadata = {
-  title: 'Edit Place',
+  title: '編輯地點',
 };
 
 export default async function Page({ params }: EditPageProps) {

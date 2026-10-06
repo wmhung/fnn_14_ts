@@ -381,7 +381,7 @@ export async function createUser(
 
   if (error) {
     console.error('[createUser error]', error);
-    throw new Error('User could not be created');
+    throw new Error('無法建立使用者');
   }
 
   return data;
@@ -406,7 +406,7 @@ export async function createFeedback({
 
   if (error) {
     console.error('[createFeedback error]', error);
-    throw new Error('Review could not be created');
+    throw new Error('無法建立評論');
   }
 
   return data;

@@ -45,15 +45,14 @@ export default function ForgotPasswordForm() {
 
         <div className='space-y-2'>
           <h2 className='text-lg font-semibold text-gray-900 dark:text-slate-100'>
-            Check your inbox
+            請查看你的收件匣
           </h2>
           <p className='text-sm text-gray-600 dark:text-slate-300 leading-relaxed'>
-            If an account with{' '}
+            若帳號{' '}
             <span className='font-medium text-gray-900 dark:text-slate-100 break-all'>
               {submittedEmail}
             </span>{' '}
-            exists, we&apos;ve sent a reset link. It can take a minute to arrive
-            — check your spam folder too.
+            存在，我們已寄出重設連結。郵件可能需要一分鐘才會送達——也請檢查垃圾郵件匣。
           </p>
         </div>
 
@@ -61,7 +60,7 @@ export default function ForgotPasswordForm() {
           href='/login'
           className='block w-full text-center px-6 py-2.5 rounded-lg font-medium bg-accent-600 text-white hover:bg-accent-700 shadow-sm hover:shadow-md transition'
         >
-          Back to sign in
+          返回登入
         </Link>
       </div>
     );
@@ -70,15 +69,14 @@ export default function ForgotPasswordForm() {
   // ─────────── INPUT STATE ───────────
   return (
     <div className='w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm ring-1 ring-gray-200 dark:ring-slate-700 p-6 sm:p-8 space-y-6'>
-      <p className='text-sm text-gray-600 dark:text-slate-300 leading-relaxed'>
-        Enter the email address linked to your account and we&apos;ll send you a
-        link to reset your password.
+      <p className='text-sm text-center text-gray-600 dark:text-slate-300 leading-relaxed'>
+        我們將寄送重設密碼的連結至您註冊的電子郵件
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className='space-y-4'>
         <div>
           <label htmlFor='email' className={labelClass}>
-            Email
+            電子郵件
           </label>
           <input
             id='email'
@@ -98,17 +96,16 @@ export default function ForgotPasswordForm() {
           disabled={isSubmitting}
           className='w-full px-6 py-2.5 rounded-lg font-medium bg-accent-600 text-white hover:bg-accent-700 shadow-sm hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed transition'
         >
-          {isSubmitting ? 'Sending...' : 'Send reset link'}
+          {isSubmitting ? '寄送中...' : '寄送重設連結'}
         </button>
       </form>
 
       <p className='text-sm text-center text-gray-600 dark:text-slate-400'>
-        Remembered it?{' '}
         <Link
           href='/login'
           className='font-medium text-accent-600 hover:underline dark:text-accent-400'
         >
-          Back to sign in
+          返回登入
         </Link>
       </p>
     </div>

@@ -98,6 +98,14 @@ const userPositionIcon = L.divIcon({
 });
 
 //  Overpass POI candidate
+// zh-Hant display labels for OSM `leisure` kinds (falls back to the raw tag)
+const POI_KIND_LABEL: Record<string, string> = {
+  park: '公園',
+  playground: '遊樂場',
+  garden: '花園',
+  nature_reserve: '自然保留區',
+};
+
 const poiIcon = L.divIcon({
   className: '',
   html: `
@@ -242,8 +250,8 @@ export default function Map() {
       console.error('[nearby] fetch failed:', err);
       setPoiError(
         err instanceof NearbyError && err.code === 'BUSY'
-          ? 'Parks service is busy — please try again.'
-          : 'Could not load nearby parks.',
+          ? '公園服務忙碌中——請再試一次。'
+          : '無法載入附近的公園。',
       );
     } finally {
       setIsLoadingPois(false);
@@ -310,7 +318,7 @@ export default function Map() {
       pendingNearbyRef.current = false;
       setIsLoadingPois(false);
       setPoiError(
-        'Location unavailable — enable location to find nearby parks.',
+        '無法取得位置——請開啟定位以尋找附近的公園。',
       );
     }
   }, [locationError]);
@@ -429,8 +437,8 @@ export default function Map() {
         setAiMessage({
           kind: 'not_found',
           text: result.title
-            ? `Couldn't find “${result.title}”. Try a different place.`
-            : "Couldn't find that place. Try a different one.",
+            ? `找不到「${result.title}」，請換個地點試試。`
+            : '找不到該地點，請換一個試試。',
         });
       }
     } catch (err) {
@@ -438,13 +446,13 @@ export default function Map() {
       if (err instanceof AiRecommendError && err.code === 'BAD_REQUEST') {
         setAiMessage({
           kind: 'not_found',
-          text: 'Please type a place to search for.',
+          text: '請輸入要搜尋的地點。',
         });
       } else {
         console.error('AI location fetch error:', err);
         setAiMessage({
           kind: 'retry',
-          text: 'The recommendation service is busy — please try again in a moment.',
+          text: '推薦服務忙碌中——請稍後再試。',
         });
       }
     } finally {
@@ -504,7 +512,7 @@ export default function Map() {
                 <span className='leading-8 text-base'>{place.notes}</span>
                 <hr />
                 <span className='leading-8 text-base'>
-                  by {place.user_name}
+                  由 {place.user_name} 新增
                 </span>
               </Popup>
             </Marker>
@@ -514,13 +522,13 @@ export default function Map() {
           <Marker key={poi.osmId} position={[poi.lat, poi.lng]} icon={poiIcon}>
             <Popup className='flex flex-col'>
               <span className='text-xs font-bold uppercase tracking-wide text-green-700'>
-                {poi.kind}
+                {POI_KIND_LABEL[poi.kind] ?? poi.kind}
               </span>
               <span className='leading-7 text-base'>
-                {poi.name ?? `Unnamed ${poi.kind}`}
+                {poi.name ?? `未命名的${POI_KIND_LABEL[poi.kind] ?? poi.kind}`}
               </span>
               <span className='text-sm text-slate-500'>
-                {poi.distanceM} m away
+                距離 {poi.distanceM} 公尺
               </span>
               <button
                 type='button'
@@ -535,7 +543,7 @@ export default function Map() {
                 }}
                 className='mt-2 px-3 py-2 bg-green-600 text-slate-50 rounded-lg font-semibold hover:bg-green-700'
               >
-                ＋ Add this place
+                ＋ 新增這個地點
               </button>
             </Popup>
           </Marker>
@@ -552,7 +560,7 @@ export default function Map() {
             position={[geolocationPosition.lat, geolocationPosition.lng]}
             icon={userPositionIcon}
           >
-            <Popup>You are here</Popup>
+            <Popup>你在這裡</Popup>
           </Marker>
         )}
 
@@ -608,7 +616,7 @@ export default function Map() {
               onClick={handleGetPosition}
               className='block mt-1 ml-auto font-semibold text-accent-300 hover:underline'
             >
-              Try again
+              再試一次
             </button>
           </div>
         )}
@@ -629,7 +637,7 @@ export default function Map() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             onFocus={clearAiState}
-            placeholder='Ask me for recommendation...'
+            placeholder='問我推薦地點...'
             className='w-full px-4 py-3 border rounded-xl dark:bg-slate-800'
           />
           <button
@@ -637,7 +645,7 @@ export default function Map() {
             onClick={() => handleSubmit()}
             className='absolute top-1 bottom-1 right-2 px-3  bg-accent-600 text-slate-50 rounded-xl shadow-xl hover:text-accent-50 hover:bg-accent-300'
           >
-            GO
+            搜尋
           </button>
         </div>
       </div>
@@ -653,7 +661,7 @@ export default function Map() {
                 onClick={() => handleSubmit(lastAiQueryRef.current)}
                 className='block mt-1 font-semibold text-accent-300 hover:underline'
               >
-                Try again
+                再試一次
               </button>
             )}
           </div>
@@ -669,16 +677,16 @@ export default function Map() {
           disabled={isLoadingPois}
           className='flex items-center gap-2 px-5 py-3 rounded-full bg-accent-600 text-slate-50 font-semibold shadow-xl hover:text-accent-50 hover:bg-accent-300 disabled:opacity-70 whitespace-nowrap'
         >
-          {isLoadingPois ? '…' : pois.length ? '↻ Search' : '🌳 Parks nearby'}
+          {isLoadingPois ? '…' : pois.length ? '↻ 重新搜尋' : '附近公園'}
         </button>
         {pois.length > 0 && !isLoadingPois && (
           <button
             type='button'
             onClick={clearPois}
-            aria-label='Clear nearby parks'
+            aria-label='清除附近公園'
             className='flex items-center gap-1 px-4 py-3 rounded-full bg-gray-700 text-slate-50 font-semibold shadow-xl hover:bg-gray-800 whitespace-nowrap'
           >
-            ✕ Clear
+            ✕ 清除
           </button>
         )}
       </div>

@@ -10,11 +10,11 @@ function SignInButton() {
       >
         <Image
           src='https://authjs.dev/img/providers/google.svg'
-          alt='Google logo'
+          alt='Google 標誌'
           height='20'
           width='20'
         />
-        <span>Continue with Google</span>
+        <span>使用 Google 繼續</span>
       </button>
     </form>
   );

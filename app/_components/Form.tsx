@@ -135,7 +135,7 @@ export default function Form({
         const data = await res.json();
         if (!data.countryCode) {
           throw new Error(
-            "That doesn't seem to be a city. Click somewhere else.",
+            '這裡似乎不是城市，請點選其他位置。',
           );
         }
         setDist(data.locality || '');
@@ -177,7 +177,7 @@ export default function Form({
     e.preventDefault();
 
     if (!placeName || !date || (!isEdit && !image)) {
-      setErrorMsg('Please fill all required fields');
+      setErrorMsg('請填寫所有必填欄位');
       return;
     }
     setErrorMsg('');
@@ -203,7 +203,7 @@ export default function Form({
         }, 1000);
       } catch (err: any) {
         console.error('Update place failed:', err.message);
-        setErrorMsg('Failed to update place. Please try again.');
+        setErrorMsg('更新地點失敗，請再試一次。');
       }
       return;
     }
@@ -234,7 +234,7 @@ export default function Form({
       await createPlace(newPlace);
     } catch (err: any) {
       console.error('Create place failed:', err.message);
-      setErrorMsg('Failed to add place. Please try again.');
+      setErrorMsg('新增地點失敗，請再試一次。');
       return;
     }
 
@@ -255,7 +255,7 @@ export default function Form({
 
   if (isLoadingGeocoding) return <Spinner />;
   if (!isEdit && !lat && !lng)
-    return <Message message='Start by clicking somewhere on the map' />;
+    return <Message message='請先在地圖上點選一個位置' />;
   if (geocodingError) return <Message message={geocodingError} />;
 
   if (success) {
@@ -263,8 +263,8 @@ export default function Form({
       <Message
         message={
           isEdit
-            ? '✅ Place updated successfully!'
-            : '✅ Place added successfully!'
+            ? '✅ 地點更新成功！'
+            : '✅ 地點新增成功！'
         }
       />
     );
@@ -277,7 +277,7 @@ export default function Form({
         onSubmit={submit}
       >
         <h1 className='text-center text-xl font-bold uppercase my-2'>
-          {isEdit ? 'Edit Place' : 'Add Place'}
+          {isEdit ? '編輯地點' : '新增地點'}
         </h1>
 
         {(errorMsg || placeError) && (
@@ -287,7 +287,7 @@ export default function Form({
         )}
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold m-1'>City name</label>
+          <label className='uppercase font-extrabold m-1'>城市</label>
           <input
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setCity(e.target.value)}
@@ -296,7 +296,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold m-1'>District name</label>
+          <label className='uppercase font-extrabold m-1'>行政區</label>
           <input
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setDist(e.target.value)}
@@ -305,7 +305,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Place name</label>
+          <label className='uppercase font-extrabold my-1'>地點名稱</label>
           <input
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setPlaceName(e.target.value)}
@@ -315,7 +315,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Date</label>
+          <label className='uppercase font-extrabold my-1'>日期</label>
           <DatePicker
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(d: Date | null) => setDate(d ?? new Date())}
@@ -325,7 +325,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Ratings</label>
+          <label className='uppercase font-extrabold my-1'>評分</label>
           <StarRating
             maxRating={5}
             size={35}
@@ -335,7 +335,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Notes</label>
+          <label className='uppercase font-extrabold my-1'>筆記</label>
           <textarea
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setNotes(e.target.value)}
@@ -345,7 +345,7 @@ export default function Form({
         </div>
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
-          <label className='uppercase font-extrabold my-1'>Recreation</label>
+          <label className='uppercase font-extrabold my-1'>休閒設施</label>
           <textarea
             className='bg-slate-200 border p-1 rounded-sm dark:text-slate-800'
             onChange={(e) => setRecreation(e.target.value)}
@@ -356,11 +356,11 @@ export default function Form({
 
         <div className='flex flex-col w-[18rem] mx-auto my-auto p-1'>
           <label className='uppercase font-extrabold my-1'>
-            {isEdit ? 'Replace photo (optional)' : 'Upload photos'}
+            {isEdit ? '更換照片（選填）' : '上傳照片'}
           </label>
           {isEdit && initialPlace?.image && (
             <p className='text-xs text-slate-500 mb-1'>
-              Current image will be kept unless you choose a new one.
+              除非選擇新照片，否則將保留目前的照片。
             </p>
           )}
           <input
@@ -370,25 +370,25 @@ export default function Form({
             disabled={isLoading}
           />
           <p className='text-xs text-slate-500 mt-1'>
-            PNG or JPEG, up to {MAX_PLACE_IMAGE_LABEL}.
+            PNG 或 JPEG，最大 {MAX_PLACE_IMAGE_LABEL}。
           </p>
           {imageError && (
             <p className='text-xs text-red-500 font-semibold mt-1'>
               {imageError}
             </p>
           )}
-          {isLoading && <p>{isEdit ? 'Updating...' : 'Uploading...'}</p>}
+          {isLoading && <p>{isEdit ? '更新中...' : '上傳中...'}</p>}
         </div>
 
         <div className='flex justify-between p-6 text-sm text-slate-200'>
           <Button disabled={isLoading}>
             {isLoading
               ? isEdit
-                ? 'Saving...'
-                : 'Creating...'
+                ? '儲存中...'
+                : '建立中...'
               : isEdit
-                ? 'Save'
-                : 'Add'}
+                ? '儲存'
+                : '新增'}
           </Button>
           <BackButton />
         </div>

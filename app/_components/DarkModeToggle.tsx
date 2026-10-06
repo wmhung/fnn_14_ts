@@ -29,7 +29,7 @@ function DarkModeToggle() {
     <button
       onClick={toggleTheme}
       className='p-2 rounded-full bg-gray-200 hover:bg-accent-600 dark:bg-gray-700 dark:hover:bg-accent-600 hover:scale-125 transition-transform duration-300'
-      aria-label='Toggle Dark Mode'
+      aria-label='切換深色模式'
     >
       <span className='block w-5 h-5'>
         {mounted &&
