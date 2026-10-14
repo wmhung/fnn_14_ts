@@ -29,7 +29,6 @@ export default function BookmarkItem({ bookmark }: BookmarkItemProps) {
   const { data: session } = useSession(); // [ADD]
 
   const {
-    id,
     place_name: placeName,
     date,
     place_id,

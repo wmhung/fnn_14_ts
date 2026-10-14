@@ -1,5 +1,5 @@
 import '@/app/_styles/globals.css';
-import { Raleway, Press_Start_2P, Tektur, Exo_2 } from 'next/font/google';
+import { Raleway } from 'next/font/google';
 import AppProviders from './_lib/AppProviders';
 import Providers from './_lib/providers';
 import { auth } from './_lib/auth';

@@ -6,7 +6,7 @@ import { RxCross2 } from 'react-icons/rx';
 import { useMobilePanel } from '../_lib/contexts/MobilePanelContext';
 
 function MobilePanelToggle() {
-  const { view, setView } = useMobilePanel();
+  const { setView } = useMobilePanel();
 
   return (
     <div className='flex justify-around w-full px-auto md:hidden dark:bg-slate-800'>
