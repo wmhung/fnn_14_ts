@@ -18,6 +18,12 @@ jobs:
 
       - run: npm ci
 
+      # next-env.d.ts is git-ignored; Next normally generates it on dev/build.
+      # Without it, tsc can't resolve image imports like '@/public/logo.png'.
+      - name: Generate next-env.d.ts
+        run: |
+          printf '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n' > next-env.d.ts
+
       - name: Type check
         run: npx tsc --noEmit
 
