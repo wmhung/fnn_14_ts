@@ -595,6 +595,7 @@ export default function Map() {
       <div className='absolute top-5 right-5 z-10 flex flex-col items-end gap-2'>
         <button
           type='button'
+          data-tour='locate'
           onClick={handleGetPosition}
           className='p-2 rounded-full bg-accent-600 text-slate-50 hover:text-accent-600 hover:bg-slate-50 shadow-xl z-40'
         >
@@ -630,7 +631,10 @@ export default function Map() {
         </div>
       )}
       <div className='absolute top-5 left-0 2xs:w-[85%] z-10 flex justify-center md:justify-start'>
-        <div className='w-[88%] max-w-[24rem] ml-[0.5rem] relative shadow-xl md:ml-[1rem]'>
+        <div
+          className='w-[88%] max-w-[24rem] ml-[0.5rem] relative shadow-xl md:ml-[1rem]'
+          data-tour='ai-search'
+        >
           <input
             type='text'
             value={inputValue}

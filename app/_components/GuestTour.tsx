@@ -14,17 +14,47 @@ const STEPS: DriveStep[] = [
     popover: {
       title: '歡迎來到 FNN',
       description:
-        '60 秒帶您認識 Finding Next Neverland，點選「下一步」或隨時關閉。',
+        '60 秒帶您認識 Finding Next Neverland，點選「下一步」或隨時關閉。<br/>接下來介紹 4 種新增景點到左側「景點清單」的方式。',
+    },
+  },
+  {
+    element: '[data-tour="locate"]',
+    popover: {
+      title: '方式 1：GPS 定位',
+      description:
+        '點擊地圖右上方的「定位符號」→ GPS 定位成功 → 填寫表單資料送出 → 成功紀錄座標',
+      side: 'left',
+      align: 'start',
+    },
+  },
+  {
+    element: '[data-tour="map"]',
+    popover: {
+      title: '方式 2：點擊地圖',
+      description:
+        '在地圖找到要新增的景點 → 點擊地圖 → 填寫表單資料送出 → 成功紀錄座標',
+      side: 'left',
+      align: 'center',
     },
   },
   {
     element: '[data-tour="find-parks"]',
     popover: {
-      title: '尋找附近的公園',
+      title: '方式 3：附近公園',
       description:
-        '點擊按鈕，立即搜尋半徑 500 公尺內的公園 → 選取公園，並新增景點 → 填寫資料送出 → 成功新增景點',
+        '點擊地圖下方「附近公園」按鈕 → 自動偵測半徑 500 公尺內公園（限台北市區）→ 選定公園 → 填寫表單資料送出 → 成功紀錄座標',
       side: 'top',
       align: 'center',
+    },
+  },
+  {
+    element: '[data-tour="ai-search"]',
+    popover: {
+      title: '方式 4：詢問 AI',
+      description:
+        '在地圖左上方搜尋欄位 → 詢問 AI 推薦造訪的景點 → 待 AI 回覆座標 → 點擊地圖 → 填寫表單資料送出 → 成功紀錄座標',
+      side: 'bottom',
+      align: 'start',
     },
   },
   {
