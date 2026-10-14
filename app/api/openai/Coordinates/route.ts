@@ -30,14 +30,7 @@ interface GeoResult {
 }
 
 interface GeoResponse {
-  results?: {
-    geometry: {
-      location: {
-        lat: number;
-        lng: number;
-      };
-    };
-  }[];
+  results?: GeoResult[];
   status?: string;
 }
 

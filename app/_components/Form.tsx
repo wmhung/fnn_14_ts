@@ -50,7 +50,6 @@ const BASE_URL = 'https://api.bigdatacloud.net/data/reverse-geocode-client';
 
 export default function Form({
   user,
-  user_name,
   mode = 'create',
   initialPlace,
 }: FormProps) {
@@ -75,9 +74,7 @@ export default function Form({
     error: placeError,
   } = usePlaces();
   const router = useRouter();
-  const { email, full_name } = user;
-
-  const displayName = full_name || user_name || 'Anonymous';
+  const { email } = user;
 
   const [isLoadingGeocoding, setIsLoadingGeocoding] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);

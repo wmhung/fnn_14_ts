@@ -54,10 +54,6 @@ export default async function Page() {
     count_3 = result_3.count || 0;
   }
 
-  // add 's' after plural noun
-  let plural: string | null = null;
-  if (count > 1) plural = 's';
-
   // fetch ratings
   let ratings: any[] = [];
   if (role === 'owner') {

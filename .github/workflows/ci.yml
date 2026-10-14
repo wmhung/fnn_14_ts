@@ -9,9 +9,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -29,7 +29,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-        continue-on-error: true # 先不擋：12 個 no-unused-vars 清完再拿掉這行
 
       - name: Unit tests
         run: npm test # 只跑單元/元件測試，不需要 secrets
