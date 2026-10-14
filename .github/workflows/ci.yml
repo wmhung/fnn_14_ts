@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # next-env.d.ts is git-ignored; Next normally generates it on dev/build.
+      # Without it, tsc can't resolve image imports like '@/public/logo.png'.
+      - name: Generate next-env.d.ts
+        run: |
+          printf '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n' > next-env.d.ts
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true # 先不擋：12 個 no-unused-vars 清完再拿掉這行
+
+      - name: Unit tests
+        run: npm test # 只跑單元/元件測試，不需要 secrets
