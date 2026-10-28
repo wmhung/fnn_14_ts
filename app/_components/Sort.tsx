@@ -19,6 +19,8 @@ function Sort() {
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const activeSort = searchParams.get('sort') ?? 'date-desc';
+  const activeLabel =
+    sortOptions.find((o) => o.value === activeSort)?.label ?? sortOptions[0].label;
 
   function handleSort(selectedSort: string) {
     const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -48,13 +50,15 @@ function Sort() {
       ref={dropdownRef}
     >
       <button
+        type='button'
+        aria-label={`排序方式：${activeLabel}`}
         onClick={() => setOpen((prev) => !prev)}
         className='flex items-center gap-1 px-2 w-[3rem] border border-slate-300 text-slate-400 rounded-md shadow-sm bg-transparent hover:border-accent-600 dark:text-slate-400 transition-all duration-300'
         aria-haspopup='true'
         aria-expanded={open}
       >
-        <MdOutlineSort className='w-4 h-6' />
-        <ChevronDown className='w-4 h-4' />
+        <MdOutlineSort className='w-4 h-6' aria-hidden='true' />
+        <ChevronDown className='w-4 h-4' aria-hidden='true' />
       </button>
 
       {open && (
@@ -62,6 +66,8 @@ function Sort() {
           {sortOptions.map((option) => (
             <li key={option.value}>
               <button
+                type='button'
+                aria-current={activeSort === option.value ? 'true' : undefined}
                 onClick={() => handleSort(option.value)}
                 className={`block w-full text-left px-4 py-2 hover:bg-accent-100 dark:hover:bg-accent-600 ${
                   activeSort === option.value

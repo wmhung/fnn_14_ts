@@ -49,7 +49,9 @@ export default async function Navigation() {
             <NaviDropdown2 fullName={user?.full_name} avatar={user?.avatar} />
           )}
         </li>
-        <DarkModeToggle />
+        <li>
+          <DarkModeToggle />
+        </li>
       </ul>
     </nav>
   );
