@@ -70,6 +70,7 @@ export default async function Page() {
         <Image
           src={bg}
           fill
+          priority
           placeholder='blur'
           quality={80}
           alt=''

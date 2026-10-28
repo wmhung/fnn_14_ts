@@ -39,6 +39,8 @@ export default function BurgerMenu() {
       <button
         ref={buttonRef}
         onClick={() => setOpen(!open)}
+        aria-label='開啟選單'
+        aria-expanded={open}
         className={`fixed z-[9999] right-9 top-7 border-none bg-none ${
           open ? 'hidden' : ''
         }`}

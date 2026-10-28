@@ -480,7 +480,7 @@ export default function Map() {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+          url='https://tile.openstreetmap.org/{z}/{x}/{y}.png'
         />
         <MapResizeHandler />
         <DetectClick enterManualMode={enterManualMode} />
@@ -596,6 +596,7 @@ export default function Map() {
         <button
           type='button'
           data-tour='locate'
+          aria-label='定位到我的位置'
           onClick={handleGetPosition}
           className='p-2 rounded-full bg-accent-600 text-slate-50 hover:text-accent-600 hover:bg-slate-50 shadow-xl z-40'
         >
