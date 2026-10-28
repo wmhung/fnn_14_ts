@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
@@ -12,6 +12,8 @@ export default function Search() {
 
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
+  // unique per instance — the list can render more than once (desktop + mobile layouts)
+  const searchId = useId();
 
   const handleSearch = useDebouncedCallback((term) => {
     const currentQuery = searchParams.get('query') ?? '';
@@ -42,10 +44,11 @@ export default function Search() {
 
   return (
     <div className='relative flex flex-shrink-0 text-sm ml-2'>
-      <label htmlFor='search' className='sr-only'>
+      <label htmlFor={searchId} className='sr-only'>
         搜尋
       </label>
       <input
+        id={searchId}
         className={`peer block ${
           isFocused ? 'max-w-[9rem]' : 'max-w-[3rem]'
         } transition-all duration-300 mr-2 rounded-md inset-shadow-2xs border border-1 border-slate-300 bg-transparent py-2 pl-10 outline-accent-600 placeholder:text-gray-500`}
@@ -57,7 +60,10 @@ export default function Search() {
         }}
         defaultValue={searchParams.get('query')?.toString()}
       />
-      <HiMagnifyingGlass className='absolute left-4 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-500' />
+      <HiMagnifyingGlass
+        aria-hidden='true'
+        className='absolute left-4 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-500'
+      />
     </div>
   );
 }
